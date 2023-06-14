@@ -13,6 +13,8 @@ public class JSONResponse {
 
     int mess;
 
+    String username;
+
     JSONPost jsonPost;
 
     JSONAttack jsonAttack;
@@ -33,6 +35,8 @@ public class JSONResponse {
                 case "CREATE":
                     mess = jsonObject.getInt("data");
                     break;
+                case "PLAYER_ADDED":
+                    username = jsonObject.getString("username");
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
