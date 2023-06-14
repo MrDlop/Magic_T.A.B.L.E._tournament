@@ -24,7 +24,9 @@ async def handler(websocket):
                 SESSIONS[json_message["session"]]["users"].index(json_message["id"])
             ]
             del SESSIONS[json_message["session"]]["users"][
-                SESSIONS[json_message["session"]]["users_names"].index(json_message["id"])
+                SESSIONS[json_message["session"]]["users_names"].index(
+                    json_message["id"]
+                )
             ]
             SESSIONS[json_message["session"]]["cnt"] -= 1
             if SESSIONS[json_message["session"]]["cnt"] == 0:
@@ -79,20 +81,22 @@ async def handler(websocket):
                     f"}}"
                 )
         elif json_message["request"] == "ARMOR" or json_message["request"] == "ATTACK":
-            await SESSIONS[json_message["session"]]["users"][json_message["id_target"]].send(json_message)
+            await SESSIONS[json_message["session"]]["users"][
+                json_message["id_target"]
+            ].send(json_message)
         elif json_message["request"] == "START":
             SESSIONS[json_message["session"]]["start"] = True
             for i in SESSIONS[json_message["session"]]["users"]:
-                await SESSIONS[json_message["session"]]["users"][i].send('{'
-                                                                         '"request":"START"'
-                                                                         '}')
+                await SESSIONS[json_message["session"]]["users"][i].send(
+                    "{" '"request":"START"' "}"
+                )
         elif json_message["request"] == "CREATE":
             if not (json_message["session"] in SESSIONS):
                 SESSIONS[json_message["session"]] = {
                     "cnt": 1,
                     "start": False,
                     "users": {1: websocket},
-                    "users_names": {1: json_message["username"]}
+                    "users_names": {1: json_message["username"]},
                 }
                 await websocket.send(
                     f"{{"
@@ -101,7 +105,7 @@ async def handler(websocket):
                     f'"data":1'
                     f"}}"
                 )
-                websocket.send(
+                await websocket.send(
                     f"{{"
                     f'"session":"{json_message["session"]}",'
                     f'"request":"PLAYER_ADDED",'
