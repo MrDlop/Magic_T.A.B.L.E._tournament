@@ -7,6 +7,7 @@ public enum GameState {
     START,// стартовый экран
     CREATING,// создание игроков
     CREATING_ONLINE,//создание сессии(игра по сети)
+    STARS_SESSION_WAITING,//ожидание начала онлайн игры
     CARD_LOOKING,//просмотр карты
     END;//конец игры
 }

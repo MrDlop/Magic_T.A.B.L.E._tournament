@@ -18,6 +18,10 @@ public class WebsocketClient extends WebSocketClient {
      */
     public WebsocketClient(URI uri) {
         super(uri);
+        this.setConnectTimeout(10000);
+        this.setReadTimeout(60000);
+        this.enableAutomaticReconnection(5000);
+        this.connect();
     }
 
     @Override
@@ -28,8 +32,8 @@ public class WebsocketClient extends WebSocketClient {
         this.send("{" +
                 "\"session\":\"" + SessionID + "\"," +
                 "\"request\":\"CONNECT\"," +
-                "\"id\": -1" +
-                "\"username\":\"" + username + "\"," +
+                "\"id\": -1," +
+                "\"username\":\"" + username + "\"" +
                 "}"
         );
     }
@@ -38,8 +42,8 @@ public class WebsocketClient extends WebSocketClient {
         this.send("{" +
                 "\"session\":\"" + SessionID + "\", " +
                 "\"request\":\"CREATE\"," +
-                "\"id\": -1" +
-                "\"username\":\"" + username + "\"," +
+                "\"id\": -1," +
+                "\"username\":\"" + username + "\"" +
                 "}"
         );
     }
@@ -52,28 +56,25 @@ public class WebsocketClient extends WebSocketClient {
                 case "CREATE":
                     if (jsonResponse.mess == 0) {
                         // not connected message (this session already create)
-                                /*
---------------------------------------PASTE CODE----------------------------------------------------
-                                 */
+                        MainMenuScreen.enter_session_name.setText("session with this name already exist");
                         // close connection
                         this.close();
                     } else {
                         // set global id player - mess value
                         ServerOnline.this_player_id = jsonResponse.mess;
+                        GameController.state = GameState.STARS_SESSION_WAITING;
                     }
                     break;
                 case "CONNECT":
                     if (jsonResponse.mess == 0) {
                         // not connected message (this session already start or not found)
-                                /*
---------------------------------------PASTE CODE----------------------------------------------------
-                                 */
+                        MainMenuScreen.enter_session_name.setText("This session already start or not found");
                         // close connection
-                        this.close();
                         this.close();
                     } else {
                         // set global id player - mess value
                         ServerOnline.this_player_id = jsonResponse.mess;
+                        GameController.state = GameState.STARS_SESSION_WAITING;
                     }
                     break;
                 case "ATTACK":
@@ -96,15 +97,13 @@ public class WebsocketClient extends WebSocketClient {
                     break;
                 case "START":
                     // start session
-                                /*
---------------------------------------PASTE CODE----------------------------------------------------
-                                 */
+                    ServerOnline.server_init(MainMenuScreen.session_names);
                     break;
                 case "PLAYER_ADDED":
                     // notify that in session connected new player
-                                /*
---------------------------------------PASTE CODE----------------------------------------------------
-                                 */
+                    if (!MainMenuScreen.session_names.contains(jsonResponse.username)) {
+                        MainMenuScreen.session_names.add(jsonResponse.username);
+                    }
                     break;
             }
         } catch (JSONException e) {
@@ -227,7 +226,7 @@ public class WebsocketClient extends WebSocketClient {
         this.send("{" +
                 "\"session\":" + ServerOnline.SessionID + "\", " +
                 "\"request\":\"ATTACK\"," +
-                "\"id\": " + ServerOnline.this_player_id +
+                "\"id\": " + ServerOnline.this_player_id + "," +
                 "\"card\":\"" + card_id + "\"," +
                 "\"id_target\":" + player_number + "," +
                 "\"id_player\":" + ServerOnline.this_player_id +
@@ -239,7 +238,7 @@ public class WebsocketClient extends WebSocketClient {
         this.send("{" +
                 "\"session\":" + ServerOnline.SessionID + "\", " +
                 "\"request\":\"ARMOR\"," +
-                "\"id\": " + ServerOnline.this_player_id +
+                "\"id\": " + ServerOnline.this_player_id + "," +
                 "\"card\":\"" + card_id + "\"," +
                 "\"id_target\":" + player_number + "," +
                 "\"id_player\":" + ServerOnline.this_player_id +

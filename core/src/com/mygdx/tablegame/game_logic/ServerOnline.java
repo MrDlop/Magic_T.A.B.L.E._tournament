@@ -15,7 +15,9 @@ import java.util.Collections;
 //класс сервера из одиночной игры,немного доработанный для взаимодействия с ServerRequestHandler, пока не используется в игре
 public class ServerOnline {
     public static String SessionID;
-    public static int this_player_id;
+    public  static WebsocketClient websocketClient;
+    public static int this_player_id=-1;
+    public static String this_player_name=null;
     private static ArrayList<Card> main_deck = new ArrayList<>();
     public static Vector3 main_deck_pos = new Vector3(-2.5f, 30.5f, 0);
     private static ArrayList<Card> legend_deck = new ArrayList<>();

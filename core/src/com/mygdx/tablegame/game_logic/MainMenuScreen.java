@@ -15,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.ScreenUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 //класс главного меню игры, отсюда можно начать разные типы игры, посмотреть правила
 public class MainMenuScreen implements Screen {
@@ -25,6 +27,7 @@ public class MainMenuScreen implements Screen {
     public static ArrayList<String> names = new ArrayList<>();// имена игроков для начала игры
     private Stage players_create_stage; // сцена создания игры на одном устройстве
     private Stage session_create_stage; // сцена создания/присоединения онлайн игры
+    private Stage waiting_room_stage;
     private Skin skin; // объект, содержащий набор свойств элементов интерфейса(лучше создавать во внешнем редакторе)
     private TextureAtlas atlas; // текстурный атлас для элементов интерфейса
     private PerspectiveCamera camera; // камера
@@ -37,12 +40,13 @@ public class MainMenuScreen implements Screen {
     private TextButton create_session_button;
     private TextButton join_session_button;
     private TextButton begin_online_game_button;
-    private TextField enter_session_name; //поля для ввода текста
+    public static TextField enter_session_name; //поля для ввода текста
     private TextField enter_players_name;
     private VerticalGroup verticalGroup;// вертикальный контейнер для объектов интерфейса
+    public static ArrayList<String> session_names=new ArrayList<>();
 
     public MainMenuScreen(GameController gam) {
-        //инициальзация переменных
+        //инициализация переменных
         this.game = gam;
         verticalGroup = new VerticalGroup();
         font.getData().setScale(5);
@@ -50,8 +54,9 @@ public class MainMenuScreen implements Screen {
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         stage = new Stage();
         players_create_stage = new Stage();
-        //session_create_stage = new Stage(); игра по сети находится в разработке, нет смысла добавлять
-        Gdx.input.setInputProcessor(stage);// позволяет обрабатывать нажтия на объекты, находящиеся на данной сцене
+        session_create_stage = new Stage(); // игра по сети находится в разработке, нет смысла добавлять
+        waiting_room_stage=new Stage();
+        Gdx.input.setInputProcessor(stage);// позволяет обрабатывать нажатия на объекты, находящиеся на данной сцене
         skin = new Skin();
         atlas = new TextureAtlas(Gdx.files.internal("test.atlas"));
         skin.addRegions(atlas);
@@ -65,14 +70,14 @@ public class MainMenuScreen implements Screen {
                 GameController.state = GameState.CREATING;
             }
         });
-        /*online_start_button = new TextButton("Online Game", skin);
+        online_start_button = new TextButton("Online Game", skin);
         online_start_button.setSize(600, 300);
         online_start_button.getLabel().setFontScale(5);
         online_start_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 GameController.state = GameState.CREATING_ONLINE;
             }
-        });*/
+        });
         rules_button = new TextButton("Game Rules", skin);
         rules_button.setSize(600, 300);
         rules_button.getLabel().setFontScale(5);
@@ -95,7 +100,7 @@ public class MainMenuScreen implements Screen {
         verticalGroup.wrap(true);
         verticalGroup.setPosition(Gdx.graphics.getWidth() / 2 - 250, Gdx.graphics.getHeight() / 2 - 370);
         verticalGroup.addActor(single_start_button);
-        //verticalGroup.addActor(online_start_button);
+        verticalGroup.addActor(online_start_button);
         verticalGroup.addActor(rules_button);
         //verticalGroup.addActor(settings_button);
         add_player_button = new TextButton("add player", skin);
@@ -114,7 +119,7 @@ public class MainMenuScreen implements Screen {
         add_player_button.setPosition(Gdx.graphics.getWidth() * 0.67f, Gdx.graphics.getHeight() / 6);
         add_player_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                if (enter_players_name.getText() != "" && Server.players_count < 5 && enter_players_name.getText() != "enter player`s name") {
+                if (!enter_players_name.getText().equals("") && Server.players_count < 5 && enter_players_name.getText().equals("enter player`s name")) {
                     Server.players_count++;
                     names.add(enter_players_name.getText());// получение и запись имени игрока
                     enter_players_name.setText("");
@@ -137,15 +142,14 @@ public class MainMenuScreen implements Screen {
         players_create_stage.addActor(enter_players_name);
         players_create_stage.addActor(begin_game_button);
         players_create_stage.addActor(add_player_button);
-        /*
         //находится в разработке(сетевая игра)
         enter_session_name = new TextField("enter session name", skin);
         enter_session_name.setSize(800, 150);
-        enter_session_name.setPosition(Gdx.graphics.getWidth() / 2f - enter_players_name.getWidth() * 3f, Gdx.graphics.getHeight() * 0.8f);
+        enter_session_name.setPosition(Gdx.graphics.getWidth() / 2f - enter_session_name.getWidth()*0.56f, Gdx.graphics.getHeight() * 0.8f);
         enter_session_name.getStyle().font.getData().setScale(4);
         enter_session_name.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                //enter_players_name.setText("");
+                enter_session_name.setText("");
             }
         });
         create_session_button = new TextButton("create session", skin);
@@ -153,6 +157,17 @@ public class MainMenuScreen implements Screen {
         create_session_button.setPosition(Gdx.graphics.getWidth() / 2.2f - create_session_button.getWidth() / 2, Gdx.graphics.getHeight() / 2 - create_session_button.getHeight() / 2);
         create_session_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                URI uri = null;
+                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
+                    try {
+                        uri=new URI("ws://192.168.1.42:8001");
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                    ServerOnline.websocketClient=new WebsocketClient(uri);
+                    ServerOnline.this_player_name=enter_players_name.getText();
+                    ServerOnline.websocketClient.onCreate(enter_session_name.getText(),ServerOnline.this_player_name);
+                }
             }
         });
         join_session_button = new TextButton("join session", skin);
@@ -160,20 +175,37 @@ public class MainMenuScreen implements Screen {
         join_session_button.setPosition(Gdx.graphics.getWidth() / 2.2f - join_session_button.getWidth() / 2, Gdx.graphics.getHeight() / 2 - join_session_button.getHeight() * 1.5f);
         join_session_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                URI uri = null;
+                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
+                    try {
+                        uri=new URI("ws://192.168.1.42:8001");
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                    ServerOnline.websocketClient=new WebsocketClient(uri);
+                    ServerOnline.this_player_name=enter_players_name.getText();
+                    ServerOnline.websocketClient.onConnect(enter_session_name.getText(),ServerOnline.this_player_name);
+                }
             }
         });
         begin_online_game_button = new TextButton("start game", skin);
         begin_online_game_button.setSize(600, 250);
-        begin_game_button.setPosition(Gdx.graphics.getWidth() * 0.67f, Gdx.graphics.getHeight() / 6);
+        begin_game_button.setPosition(Gdx.graphics.getWidth() * 0.67f, Gdx.graphics.getHeight() / 6f);
         begin_game_button.setVisible(true);
         begin_game_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
+                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("")){
+                    ServerOnline.websocketClient.sendStartRequest();
+                    ServerOnline.server_init(session_names);
+                }
             }
         });
-        session_create_stage.addActor(begin_game_button);
         session_create_stage.addActor(join_session_button);
         session_create_stage.addActor(create_session_button);
-        session_create_stage.addActor(enter_session_name);*/
+        session_create_stage.addActor(enter_session_name);
+        session_create_stage.addActor(enter_players_name);
+        waiting_room_stage.addActor(begin_game_button);
+
     }
 
     @Override
@@ -204,14 +236,28 @@ public class MainMenuScreen implements Screen {
                 break;
             }
             // в разработке(онлайн игра)
-            /*case CREATING_ONLINE: {
+            case CREATING_ONLINE: {
                 Gdx.input.setInputProcessor(session_create_stage);
                 camera.update();
                 ScreenUtils.clear(0, 0, 0, 1);
                 session_create_stage.act();
                 session_create_stage.draw();
                 break;
-            }*/
+            }
+            case STARS_SESSION_WAITING:{
+                Gdx.input.setInputProcessor(waiting_room_stage);
+                camera.update();
+                ScreenUtils.clear(0, 0, 0, 1);
+                waiting_room_stage.act();
+                waiting_room_stage.draw();
+                spriteBatch.begin();
+                for(int i=0;i<session_names.size();i++){
+                    font.getData().setScale(4);
+                    font.draw(spriteBatch,session_names.get(i),Gdx.graphics.getWidth()/1.5f,Gdx.graphics.getHeight()/3+75*i);
+                }
+                spriteBatch.end();
+                break;
+            }
         }
     }
 
