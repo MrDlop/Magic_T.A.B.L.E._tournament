@@ -8,6 +8,7 @@ SESSIONS = dict()
 
 async def handler(websocket):
     global SESSIONS
+
     while True:
         try:
             message = await websocket.recv()
@@ -35,9 +36,6 @@ async def handler(websocket):
                     SESSIONS[mess["session"]]["users"][
                         SESSIONS[mess["session"]]["cnt"]
                     ] = websocket
-                    SESSIONS[mess["session"]]["users_names"][
-                        SESSIONS[mess["session"]]["cnt"]
-                    ] = mess["username"]
                     await websocket.send(
                         f"{{"
                         f'"session":{mess["session"]},'
@@ -45,6 +43,17 @@ async def handler(websocket):
                         f'"data":{SESSIONS[mess["session"]]["cnt"]}'
                         f"}}"
                     )
+                    for i in SESSIONS[mess["session"]]["users"]:
+                        await websocket.send(
+                            f"{{"
+                            f'"session":"{mess["session"]}",'
+                            f'"request":"PLAYER_ADDED",'
+                            f'"username":"{SESSIONS[mess["session"]]["users_names"][i]}"'
+                            f"}}"
+                        )
+                    SESSIONS[mess["session"]]["users_names"][
+                        SESSIONS[mess["session"]]["cnt"]
+                    ] = mess["username"]
                     for i in SESSIONS[mess["session"]]["users"]:
                         await SESSIONS[mess["session"]]["users"][i].send(
                             f"{{"
@@ -92,7 +101,7 @@ async def handler(websocket):
                     f'"data":1'
                     f"}}"
                 )
-                await websocket.send(
+                websocket.send(
                     f"{{"
                     f'"session":"{mess["session"]}",'
                     f'"request":"PLAYER_ADDED",'
