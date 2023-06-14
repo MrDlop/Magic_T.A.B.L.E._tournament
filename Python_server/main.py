@@ -127,4 +127,5 @@ async def main():
         await asyncio.Future()
 
 
+print("I'm live")
 asyncio.run(main())
