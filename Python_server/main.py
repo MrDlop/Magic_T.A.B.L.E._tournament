@@ -93,6 +93,13 @@ async def handler(websocket):
                     f'"data":1'
                     f"}}"
                 )
+                websocket.send(
+                    f"{{"
+                    f'"session":"{mess["session"]}",'
+                    f'"request":"PLAYER_ADDED",'
+                    f'"username":"{mess["username"]}"'
+                    f"}}"
+                )
             else:
                 await websocket.send(
                     f"{{"
