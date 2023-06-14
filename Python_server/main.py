@@ -8,7 +8,6 @@ SESSIONS = dict()
 
 async def handler(websocket):
     global SESSIONS
-
     while True:
         try:
             message = await websocket.recv()
@@ -93,7 +92,7 @@ async def handler(websocket):
                     f'"data":1'
                     f"}}"
                 )
-                websocket.send(
+                await websocket.send(
                     f"{{"
                     f'"session":"{mess["session"]}",'
                     f'"request":"PLAYER_ADDED",'
