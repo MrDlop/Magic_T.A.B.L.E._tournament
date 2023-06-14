@@ -51,7 +51,7 @@ async def handler(websocket):
                             f"{{"
                             f'"session":"{mess["session"]}",'
                             f'"request":"PLAYER_ADDED",'
-                            f'"username":{mess["username"]}'
+                            f'"username":"{mess["username"]}"'
                             f"}}"
                         )
                 else:
