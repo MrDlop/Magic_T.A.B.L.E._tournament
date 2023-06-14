@@ -24,20 +24,22 @@ public class WebsocketClient extends WebSocketClient {
     public void onOpen() {
     }
 
-    public void onConnect(String SessionID) {
+    public void onConnect(String SessionID, String username) {
         this.send("{" +
-                "\"session\":\"" + SessionID + "\", " +
+                "\"session\":\"" + SessionID + "\"," +
                 "\"request\":\"CONNECT\"," +
                 "\"id\": -1" +
+                "\"username\":\"" + username + "\"," +
                 "}"
         );
     }
 
-    public void onCreate(String SessionID) {
+    public void onCreate(String SessionID, String username) {
         this.send("{" +
                 "\"session\":\"" + SessionID + "\", " +
                 "\"request\":\"CREATE\"," +
                 "\"id\": -1" +
+                "\"username\":\"" + username + "\"," +
                 "}"
         );
     }
@@ -94,6 +96,12 @@ public class WebsocketClient extends WebSocketClient {
                     break;
                 case "START":
                     // start session
+                                /*
+--------------------------------------PASTE CODE----------------------------------------------------
+                                 */
+                    break;
+                case "PLAYER_ADDED":
+                    // notify that in session connected new player
                                 /*
 --------------------------------------PASTE CODE----------------------------------------------------
                                  */

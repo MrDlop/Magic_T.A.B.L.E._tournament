@@ -22,10 +22,17 @@ public class JSONResponse {
             this.session = jsonObject.getString("session");
             this.type_request = jsonObject.getString("request");
             switch (this.type_request) {
-                case "POST" -> jsonPost = new JSONPost(jsonObject.getJSONObject("data"));
-                case "ATTACK", "ARMOR" ->
-                        jsonAttack = new JSONAttack(jsonObject.getJSONObject("data"));
-                case "CONNECT", "CREATE" -> mess = jsonObject.getInt("data");
+                case "POST":
+                    jsonPost = new JSONPost(jsonObject.getJSONObject("data"));
+                    break;
+                case "ATTACK":
+                case "ARMOR":
+                    jsonAttack = new JSONAttack(jsonObject.getJSONObject("data"));
+                    break;
+                case "CONNECT":
+                case "CREATE":
+                    mess = jsonObject.getInt("data");
+                    break;
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);
