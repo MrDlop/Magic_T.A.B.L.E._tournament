@@ -24,7 +24,7 @@ async def handler(websocket):
                 SESSIONS[mess["session"]]["users"].index(mess["id"])
             ]
             del SESSIONS[mess["session"]]["users"][
-                SESSIONS[mess["session"]]["users_name"].index(mess["id"])
+                SESSIONS[mess["session"]]["users_names"].index(mess["id"])
             ]
             SESSIONS[mess["session"]]["cnt"] -= 1
             if SESSIONS[mess["session"]]["cnt"] == 0:
@@ -36,9 +36,6 @@ async def handler(websocket):
                     SESSIONS[mess["session"]]["users"][
                         SESSIONS[mess["session"]]["cnt"]
                     ] = websocket
-                    SESSIONS[mess["session"]]["users_name"][
-                        SESSIONS[mess["session"]]["cnt"]
-                    ] = mess["username"]
                     await websocket.send(
                         f"{{"
                         f'"session":{mess["session"]},'
@@ -46,6 +43,17 @@ async def handler(websocket):
                         f'"data":{SESSIONS[mess["session"]]["cnt"]}'
                         f"}}"
                     )
+                    for i in SESSIONS[mess["session"]]["users"]:
+                        await websocket.send(
+                            f"{{"
+                            f'"session":"{mess["session"]}",'
+                            f'"request":"PLAYER_ADDED",'
+                            f'"username":"{SESSIONS[mess["session"]]["users_names"][i]}"'
+                            f"}}"
+                        )
+                    SESSIONS[mess["session"]]["users_names"][
+                        SESSIONS[mess["session"]]["cnt"]
+                    ] = mess["username"]
                     for i in SESSIONS[mess["session"]]["users"]:
                         await SESSIONS[mess["session"]]["users"][i].send(
                             f"{{"
@@ -84,13 +92,20 @@ async def handler(websocket):
                     "cnt": 1,
                     "start": False,
                     "users": {1: websocket},
-                    "users_name": {1: mess["username"]}
+                    "users_names": {1: mess["username"]}
                 }
                 await websocket.send(
                     f"{{"
                     f'"session":"{mess["session"]}",'
                     f'"request":"CREATE", '
                     f'"data":1'
+                    f"}}"
+                )
+                websocket.send(
+                    f"{{"
+                    f'"session":"{mess["session"]}",'
+                    f'"request":"PLAYER_ADDED",'
+                    f'"username":"{mess["username"]}"'
                     f"}}"
                 )
             else:
