@@ -29,7 +29,8 @@ async def handler(websocket):
                 if not SESSIONS[mess["session"]]["start"]:
                     SESSIONS[mess["session"]]["users"][SESSIONS[mess["session"]]["cnt"]] = websocket
                     SESSIONS[mess["session"]]["cnt"] += 1
-                    websocket.send(f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":{SESSIONS[mess['session']]['cnt']}")
+                    websocket.send(
+                        f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":{SESSIONS[mess['session']]['cnt']}")
                 else:
                     websocket.send(f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":0")
             else:
@@ -40,15 +41,17 @@ async def handler(websocket):
             SESSIONS[mess["session"]]["start"] = True
             for i in SESSIONS[mess["session"]]["users"]:
                 await SESSIONS[mess["session"]]["users"][i].send("{\"request\":\"START\"")
-        elif mess["request"] == "CREARE":
-            if not(mess["session"] in SESSIONS:
+        elif mess["request"] == "CREATE":
+            if not (mess["session"] in SESSIONS):
                 SESSIONS[mess["session"]] = {"cnt": 1, "start": False, "users": {0: websocket}}
-                websocket.send(f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":1")
+                websocket.send(f"\"session\":{mess['session']},\"request\":\"CREATE\", \"data\":1")
             else:
-                websocket.send(f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":0")
+                websocket.send(f"\"session\":{mess['session']},\"request\":\"CREATE\", \"data\":0")
 
 
 async def main():
     async with websockets.serve(handler, "localhost", 8001):
-        await asyncio.Future()  # run foreverif __name__ == "__main__":
-    asyncio.run(main())
+        await asyncio.Future()
+
+
+asyncio.run(main())

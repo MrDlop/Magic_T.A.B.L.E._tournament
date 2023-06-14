@@ -30,10 +30,20 @@ public class ServerRequestHandler {
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen() {
-                // Create connection to SessionID
+                // Create connection to SessionID (connect to session)
                 webSocketClient.send("{" +
                         "\"session\":\"" + ServerOnline.SessionID + "\", " +
                         "\"request\":\"CONNECT\"," +
+                        "\"id\": -1" +
+                        "}"
+                );
+            }
+
+            public void onCreate() {
+                // Create connection to SessionID (create session)
+                webSocketClient.send("{" +
+                        "\"session\":\"" + ServerOnline.SessionID + "\", " +
+                        "\"request\":\"CREATE\"," +
                         "\"id\": -1" +
                         "}"
                 );
@@ -44,13 +54,27 @@ public class ServerRequestHandler {
                 try {
                     JSONResponse jsonResponse = new JSONResponse(new JSONObject(s));
                     switch (jsonResponse.type_request) {
-                        case "CONNECT":
+                        case "CREATE":
                             if (jsonResponse.mess == 0) {
-                                // not connected message
+                                // not connected message (this session already create)
                                 /*
 --------------------------------------PASTE CODE----------------------------------------------------
                                  */
                                 // close connection
+                                webSocketClient.close();
+                            } else {
+                                // set global id player - mess value
+                                ServerOnline.this_player_id = jsonResponse.mess;
+                            }
+                            break;
+                        case "CONNECT":
+                            if (jsonResponse.mess == 0) {
+                                // not connected message (this session already start or not found)
+                                /*
+--------------------------------------PASTE CODE----------------------------------------------------
+                                 */
+                                // close connection
+                                webSocketClient.close();
                                 webSocketClient.close();
                             } else {
                                 // set global id player - mess value
