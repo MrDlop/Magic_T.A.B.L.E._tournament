@@ -8,7 +8,6 @@ SESSIONS = dict()
 
 async def handler(websocket):
     global SESSIONS
-    print(1)
 
     while True:
         try:
@@ -31,23 +30,24 @@ async def handler(websocket):
                     SESSIONS[mess["session"]]["users"][SESSIONS[mess["session"]]["cnt"]] = websocket
                     SESSIONS[mess["session"]]["cnt"] += 1
                     await websocket.send(
-                        f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":{SESSIONS[mess['session']]['cnt']}")
+                        f"{{\"session\":{mess['session']},\"request\":\"CONNECT\", "
+                        f"\"data\":{SESSIONS[mess['session']]['cnt']}}}")
                 else:
-                    await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CONNECT\", \"data\":0")
+                    await websocket.send(f"{{\"session\":\"{mess['session']}\",\"request\":\"CONNECT\", \"data\":0}}")
             else:
-                await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CONNECT\", \"data\":0")
+                await websocket.send(f"{{\"session\":\"{mess['session']}\",\"request\":\"CONNECT\", \"data\":0}}")
         elif mess["request"] == "ARMOR" or mess["request"] == "ATTACK":
             await SESSIONS[mess["session"]]["users"][mess["id_target"]].send(mess)
         elif mess["request"] == "START":
             SESSIONS[mess["session"]]["start"] = True
             for i in SESSIONS[mess["session"]]["users"]:
-                await SESSIONS[mess["session"]]["users"][i].send("{\"request\":\"START\"")
+                await SESSIONS[mess["session"]]["users"][i].send("{\"request\":\"START\"}")
         elif mess["request"] == "CREATE":
             if not (mess["session"] in SESSIONS):
                 SESSIONS[mess["session"]] = {"cnt": 1, "start": False, "users": {0: websocket}}
-                await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CREATE\", \"data\":1")
+                await websocket.send(f"{{\"session\":\"{mess['session']}\",\"request\":\"CREATE\", \"data\":1}}")
             else:
-                await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CREATE\", \"data\":0")
+                await websocket.send(f"{{\"session\":\"{mess['session']}\",\"request\":\"CREATE\", \"data\":0}}")
 
 
 async def main():
