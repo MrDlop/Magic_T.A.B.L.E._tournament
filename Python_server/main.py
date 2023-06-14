@@ -8,7 +8,7 @@ SESSIONS = dict()
 
 async def handler(websocket):
     global SESSIONS
-
+    print("Client connected")
     while True:
         try:
             message = await websocket.recv()
