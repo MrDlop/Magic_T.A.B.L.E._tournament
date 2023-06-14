@@ -30,12 +30,12 @@ async def handler(websocket):
                 if not SESSIONS[mess["session"]]["start"]:
                     SESSIONS[mess["session"]]["users"][SESSIONS[mess["session"]]["cnt"]] = websocket
                     SESSIONS[mess["session"]]["cnt"] += 1
-                    websocket.send(
+                    await websocket.send(
                         f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":{SESSIONS[mess['session']]['cnt']}")
                 else:
-                    websocket.send(f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":0")
+                    await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CONNECT\", \"data\":0")
             else:
-                websocket.send(f"\"session\":{mess['session']},\"request\":\"CONNECT\", \"data\":0")
+                await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CONNECT\", \"data\":0")
         elif mess["request"] == "ARMOR" or mess["request"] == "ATTACK":
             await SESSIONS[mess["session"]]["users"][mess["id_target"]].send(mess)
         elif mess["request"] == "START":
@@ -45,9 +45,9 @@ async def handler(websocket):
         elif mess["request"] == "CREATE":
             if not (mess["session"] in SESSIONS):
                 SESSIONS[mess["session"]] = {"cnt": 1, "start": False, "users": {0: websocket}}
-                websocket.send(f"\"session\":{mess['session']},\"request\":\"CREATE\", \"data\":1")
+                await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CREATE\", \"data\":1")
             else:
-                websocket.send(f"\"session\":{mess['session']},\"request\":\"CREATE\", \"data\":0")
+                await websocket.send(f"\"session\":\"{mess['session']}\",\"request\":\"CREATE\", \"data\":0")
 
 
 async def main():
