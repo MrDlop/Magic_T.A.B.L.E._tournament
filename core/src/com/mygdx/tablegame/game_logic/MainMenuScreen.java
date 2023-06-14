@@ -160,7 +160,7 @@ public class MainMenuScreen implements Screen {
                 URI uri = null;
                 if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
                     try {
-                        uri=new URI("ws://192.168.1.42:8001");
+                        uri=new URI("wss://magic-t-a-b-l-e-tournament-python-server-t8rd.onrender.com");
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
@@ -178,7 +178,7 @@ public class MainMenuScreen implements Screen {
                 URI uri = null;
                 if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
                     try {
-                        uri=new URI("ws://192.168.1.42:8001");
+                        uri=new URI("wss://magic-t-a-b-l-e-tournament-python-server-t8rd.onrender.com");
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
                     }
@@ -253,7 +253,7 @@ public class MainMenuScreen implements Screen {
                 spriteBatch.begin();
                 for(int i=0;i<session_names.size();i++){
                     font.getData().setScale(4);
-                    font.draw(spriteBatch,session_names.get(i),Gdx.graphics.getWidth()/1.5f,Gdx.graphics.getHeight()/3+75*i);
+                    font.draw(spriteBatch,session_names.get(i),Gdx.graphics.getWidth()/2.5f,Gdx.graphics.getHeight()/2f+75*i);
                 }
                 spriteBatch.end();
                 break;

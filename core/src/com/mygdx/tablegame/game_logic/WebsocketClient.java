@@ -18,9 +18,9 @@ public class WebsocketClient extends WebSocketClient {
      */
     public WebsocketClient(URI uri) {
         super(uri);
-        this.setConnectTimeout(10000);
+        /*this.setConnectTimeout(10000);
         this.setReadTimeout(60000);
-        this.enableAutomaticReconnection(5000);
+        this.enableAutomaticReconnection(5000);*/
         this.connect();
     }
 

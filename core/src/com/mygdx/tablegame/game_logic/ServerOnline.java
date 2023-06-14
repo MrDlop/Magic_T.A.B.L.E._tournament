@@ -34,6 +34,7 @@ public class ServerOnline {
     public static Vector3 actual_card_rotation = new Vector3(0, 0, 0);
 
     public static void server_init(ArrayList<String> names) {
+        players_count=names.size();
         players = new Player[players_count];
         if (players_count == 2) {
             Player player = new Player(new Vector3(0, 50, 40), 0);
