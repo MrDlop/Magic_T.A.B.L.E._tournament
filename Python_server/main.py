@@ -4,11 +4,16 @@ import json
 import websockets
 
 SESSIONS = dict()
+flag = True
+web = None
 
 
 async def handler(websocket):
-    global SESSIONS
-    print("Client connected")
+    global SESSIONS, flag, web
+    if flag:
+        flag = False
+        web = websocket
+    await web.send("CONNECT")
     while True:
         try:
             message = await websocket.recv()
@@ -127,5 +132,4 @@ async def main():
         await asyncio.Future()
 
 
-print("I'm live")
 asyncio.run(main())
