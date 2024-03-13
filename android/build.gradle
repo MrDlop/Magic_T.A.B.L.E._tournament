@@ -1,6 +1,7 @@
 android {
     buildToolsVersion "33.0.0"
     compileSdkVersion 33
+    namespace "com.mygdx.tablegame"
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -28,6 +29,10 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    buildFeatures {
+        renderScript true
+        aidl true
     }
 }
 

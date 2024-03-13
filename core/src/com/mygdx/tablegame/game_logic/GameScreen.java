@@ -31,6 +31,7 @@ import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.mygdx.tablegame.tools.Animation;
+import com.mygdx.tablegame.tools.CameraAnimation;
 import com.mygdx.tablegame.tools.ElementUI;
 import com.mygdx.tablegame.tools.Pair;
 import com.mygdx.tablegame.cards.Card;
@@ -49,6 +50,8 @@ public class GameScreen implements Screen {
     Pair<Vector2, Float> animation_data;//для анимаций 2д карт
     private Sprite black_fon;
     private Texture black = new Texture(Gdx.files.internal("black.png"));// текстура для затемнения экрана
+    Texture bg_image=new Texture(Gdx.files.internal("change_player_scene.png"));
+    Sprite change_player_background=new Sprite(bg_image,bg_image.getWidth(),bg_image.getHeight());
     //сцены для разных ситуаций
     private Stage selection_stage;
     private Stage changing_stage;
@@ -69,7 +72,8 @@ public class GameScreen implements Screen {
     private Float ZrotAng;
     private Sprite now_looking_card_sprite;//просматриваемая сейчас карта
     public static boolean card_looking=false;
-
+    Vector3 tmp=new Vector3(Server.player_now.camera.position);
+    CameraAnimation cameraAnimation;
     public static String[] getPlayer_UI_names() {
         return player_UI_names;
     }
@@ -93,8 +97,10 @@ public class GameScreen implements Screen {
         black_fon.setCenter(black.getWidth() / 2, black.getHeight() / 2);
         black_fon.setOrigin(black_fon.getWidth() / 2, black_fon.getHeight() / 2);
         black_fon.setTexture(black);
-        black_fon.setScale(20);//для закрытия вссего экрана
+        black_fon.setScale(20);//для закрытия всего экрана
         black_fon.setAlpha(0.75f);// установка прозрачности
+        change_player_background.setScale(Gdx.graphics.getWidth()/change_player_background.getWidth(),Gdx.graphics.getHeight()/change_player_background.getHeight());
+        change_player_background.setCenter(Gdx.graphics.getWidth()/2f,Gdx.graphics.getHeight()/2f);
         font = new BitmapFont();
         selection_stage = new Stage();
         Skin skin = new Skin();
@@ -138,12 +144,12 @@ public class GameScreen implements Screen {
         change_button.setSize(500, 250);
         change_button.setRound(true);
         change_button.setColor(Color.BLUE);
-        change_button.setPosition(Gdx.graphics.getWidth() / 2 - change_button.getWidth() / 2, Gdx.graphics.getHeight() / 5);
+        change_button.setPosition(Gdx.graphics.getWidth() / 2f - change_button.getWidth() / 2, Gdx.graphics.getHeight() / 2f-change_button.getHeight()*1.5f);
         change_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 inputMultiplexer.clear();
                 inputMultiplexer.addProcessor(run_stage);
-                inputMultiplexer.addProcessor(Server.player_now.inputController);
+                //inputMultiplexer.addProcessor(Server.player_now.inputController);
                 Server.refresh_market();
                 GameController.state = GameState.RUN;
             }
@@ -173,7 +179,30 @@ public class GameScreen implements Screen {
     public void show() {
         //вызывается при установке данного экрана
         Server.player_now.player_init();
-        Server.player_now.getHand();
+        //Server.player_now.getHand();
+        cameraAnimation=new CameraAnimation(tmp,new Vector3(-50,50,50),3000,new Vector3(100,100,100),"test",Server.player_now.camera);
+    }
+    public  void render3dObjects(float delta){
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        ScreenUtils.clear(Color.SKY);
+        modelBatch.begin(Server.player_now.camera);
+        for (RenderableObject model:RenderController.renderable_3d) {
+            modelBatch.render(model.modelInstance,environment);
+        }
+        modelBatch.end();
+    }
+    public void drawAnimations(){
+        for (RenderableObject animatedObj:RenderController.animations) {
+            animatedObj.update_animation();
+        }
+    }
+    public  void drawUI(){
+        spriteBatch.begin();
+        for (ElementUI element : RenderController.UI_elements) {
+            element.sprite.draw(spriteBatch);
+        }
+        spriteBatch.end();
     }
 
     @Override
@@ -190,117 +219,12 @@ public class GameScreen implements Screen {
                 for (Card card : decks) {
                     modelBatch.render(card.instance, environment);
                 }
-                if (!CanTouch.renderable_3d.isEmpty()) {
-                    //отрисовка 3д обьектов
-                    for (Card card : CanTouch.renderable_3d) {
-                        if (!card.animations3D.isEmpty()) {
-                            anim_data = card.animations3D.get(0);
-                            if (anim_data.start_time == -1) {
-                                //установка времени начала анимации
-                                anim_data.start_time = TimeUtils.millis();
-                            }
-                            if (anim_data.duration > TimeUtils.timeSinceMillis(anim_data.start_time)) {
-                                if (anim_data.start_rotation_angles != null) {
-                                    //преобразование эйлеровых углов в кватернион для поворота модели через матрицу
-                                    XrotAng = anim_data.start_rotation_angles.x + anim_data.delta_angleX * (TimeUtils.timeSinceMillis(anim_data.start_time) / anim_data.duration) - anim_data.prevRotX;
-                                    anim_data.prevRotX += XrotAng;
-                                    YrotAng = anim_data.start_rotation_angles.y + anim_data.delta_angleY * (TimeUtils.timeSinceMillis(anim_data.start_time) / anim_data.duration) - anim_data.prevRotY;
-                                    anim_data.prevRotY += YrotAng;
-                                    ZrotAng = anim_data.start_rotation_angles.z + anim_data.delta_angleZ * (TimeUtils.timeSinceMillis(anim_data.start_time) / anim_data.duration) - anim_data.prevRotZ;
-                                    anim_data.prevRotZ += ZrotAng;
-                                    anim_matrix.set(new float[]{
-                                            MathUtils.cosDeg(YrotAng) * MathUtils.cosDeg(ZrotAng),
-                                            MathUtils.sinDeg(XrotAng) * MathUtils.sinDeg(YrotAng) * MathUtils.cosDeg(ZrotAng) + MathUtils.sinDeg(ZrotAng) * MathUtils.cosDeg(XrotAng),
-                                            MathUtils.sinDeg(XrotAng) * MathUtils.sinDeg(ZrotAng) - MathUtils.sinDeg(YrotAng) * MathUtils.cosDeg(XrotAng) * MathUtils.cosDeg(ZrotAng),
-                                            -1 * MathUtils.sinDeg(ZrotAng) * MathUtils.cosDeg(YrotAng),
-                                            -1 * MathUtils.sinDeg(XrotAng) * MathUtils.sinDeg(YrotAng) * MathUtils.sinDeg(ZrotAng) + MathUtils.cosDeg(XrotAng) * MathUtils.cosDeg(ZrotAng),
-                                            MathUtils.sinDeg(XrotAng) * MathUtils.cosDeg(ZrotAng) + MathUtils.sinDeg(YrotAng) * MathUtils.sinDeg(ZrotAng) * MathUtils.cosDeg(XrotAng),
-                                            MathUtils.sinDeg(YrotAng),
-                                            -1 * MathUtils.sinDeg(XrotAng) * MathUtils.cosDeg(YrotAng),
-                                            MathUtils.cosDeg(XrotAng) * MathUtils.cosDeg(YrotAng)
-                                    });
-                                    quaternion.setFromMatrix(anim_matrix);
-                                    card.instance.transform.rotate(quaternion);
-                                }
-                                //изменение плоложения карты(линейная интерполяция)
-                                card.setCardPos(new Vector3(anim_data.startPos.x + anim_data.distanceX * (TimeUtils.timeSinceMillis(anim_data.start_time) / anim_data.duration), anim_data.startPos.y + anim_data.distanceY * (TimeUtils.timeSinceMillis(anim_data.start_time) / anim_data.duration), anim_data.startPos.z + anim_data.distanceZ * (TimeUtils.timeSinceMillis(anim_data.start_time) / anim_data.duration)));
-                            }
-
-                            if (anim_data.duration <= TimeUtils.timeSinceMillis(anim_data.start_time)) {
-                                //удаление закончившийся анимации
-                                card.setCardPos(anim_data.endPos);
-                                CanTouch.need_to_delete3D.add(card);
-                            }
-                        }
-                        modelBatch.render(card.instance);
-                    }
-                }
-                for (int i = 0; i < CanTouch.need_to_delete3D.size(); ) {
-                    //удаление закончившийся анимации(нужно для вызова функции конца анимации , после полной реализации анимаций, зависящих от времени изменить)
-                    CanTouch.need_to_delete3D.get(0).animation3Dend(CanTouch.need_to_delete3D.get(0).animations3D.get(0).id);
-                    CanTouch.need_to_delete3D.get(0).animations3D.remove(0);
-                    CanTouch.need_to_delete3D.remove(0);
-                }
                 modelBatch.end();
-                //анимации камеры(на доработке)
-               /* if (cameraAnimation != null) {
-                    if (cameraAnimation.anim_data.start_time == -1) {
-                        cameraAnimation.anim_data.start_time = TimeUtils.millis();
-                    }
-                }
-                if (cameraAnimation != null) {
-                    if (cameraAnimation.duration > TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time)) {
-                        //Server.player_now.camera.position.set(cameraAnimation.startPos.x + cameraAnimation.distanceX * (TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time) / cameraAnimation.duration), cameraAnimation.startPos.y + cameraAnimation.distanceY * (TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time) / cameraAnimation.duration), cameraAnimation.startPos.z + cameraAnimation.distanceZ * (TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time) / cameraAnimation.duration));
-                        float XZrotAngle= cameraAnimation.XZrotAngle*(TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time)/cameraAnimation.duration)-cameraAnimation.prevRotAngleXZ;
-                        cameraAnimation.prevRotAngleXZ+=XZrotAngle;
-                        float YrotAngle= cameraAnimation.YrotAngle*(TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time)/cameraAnimation.duration)-cameraAnimation.prevRotAngleY;
-                        cameraAnimation.prevRotAngleY+=YrotAngle;
-                        Server.player_now.camera.rotate(XZrotAngle,0,cameraAnimation.endPos.y,0);
-                        Server.player_now.camera.rotate(cameraAnimation.tmp_look_at,YrotAngle);
-                        Server.player_now.camera.update();
-                    }
-                }
-                if (cameraAnimation != null) {
-                    if (cameraAnimation.duration <= TimeUtils.timeSinceMillis(cameraAnimation.anim_data.start_time)) {
-                        cameraAnimation = null;
-                    }
-
-                }*/
-                spriteBatch.begin();
-                if (!CanTouch.renderable_2d.isEmpty()) {
-                    //отрисовка 2д обьектов
-                    for (Card card : CanTouch.renderable_2d) {
-                        if (card.animations2D.isEmpty()) {
-                        } else {
-                            if (card.animations2D.get(0).iterator().hasNext()) {
-                                //применение 2д анимации #TODO сделать анимации зависящими от времени, а не от кадров
-                                animation_data = (Pair<Vector2, Float>) card.animations2D.get(0).iterator().next();
-                                card.sprite.setPosition(animation_data.first.x, animation_data.first.y);
-                                card.sprite.rotate(animation_data.second);
-                            } else {
-                                CanTouch.need_to_delete2D.add(card);
-                            }
-                        }
-                        card.sprite.draw(spriteBatch);
-                    }
-                }
-                for (int i = 0; i < CanTouch.need_to_delete2D.size(); ) {
-                    //удаление закончившихся анимаций(нужно для вызова функции конца анимации , после полной реализации анимаций, зависящих от времени изменить)
-                    CanTouch.need_to_delete2D.get(0).animation2Dend(CanTouch.need_to_delete2D.get(0).animations2D.get(0).id);
-                    CanTouch.need_to_delete2D.get(0).animations2D.remove(0);
-                    CanTouch.need_to_delete2D.remove(0);
-                }
-                for (ElementUI element : CanTouch.UI_elements) {
-                    //отрисовка элементов интерфейса
-                    element.sprite.draw(spriteBatch);
-                }
+                drawAnimations();
+                render3dObjects(delta);
+                drawUI();
                 run_stage.act();
                 run_stage.draw();
-                font.getData().setScale(2.5f);
-                for (int i = 0; i < Server.players_count; i++) {
-                    font.draw(spriteBatch, player_UI_names[i], 10, CanTouch.UI_elements.get(0).sprite.getHeight() * i + 50 * i + 40);
-                }
-                spriteBatch.end();
                 break;
             }
             case CARD_LOOKING: {
@@ -315,8 +239,8 @@ public class GameScreen implements Screen {
                 for (Card card : decks) {
                     modelBatch.render(card.instance, environment);
                 }
-                if (!CanTouch.renderable_3d.isEmpty()) {
-                    for (Card card : CanTouch.renderable_3d) {
+                if (!RenderController.renderable_3d.isEmpty()) {
+                    for (Card card : RenderController.renderable_3d) {
                         if (!card.animations3D.isEmpty()) {
                             anim_data = card.animations3D.get(0);
                             if (anim_data.start_time == -1) {
@@ -349,33 +273,34 @@ public class GameScreen implements Screen {
 
                             if (anim_data.duration <= TimeUtils.timeSinceMillis(anim_data.start_time)) {
                                 card.setCardPos(anim_data.endPos);
-                                CanTouch.need_to_delete3D.add(card);
+                                RenderController.need_to_delete3D.add(card);
                             }
                         }
                         modelBatch.render(card.instance);
                     }
                 }
-                for (int i = 0; i < CanTouch.need_to_delete3D.size(); ) {
-                    CanTouch.need_to_delete3D.get(0).animation3Dend(CanTouch.need_to_delete3D.get(0).animations3D.get(0).id);
-                    CanTouch.need_to_delete3D.get(0).animations3D.remove(0);
-                    CanTouch.need_to_delete3D.remove(0);
+                for (int i = 0; i < RenderController.need_to_delete3D.size(); ) {
+                    RenderController.need_to_delete3D.get(0).animationEnd(RenderController.need_to_delete3D.get(0).animations3D.get(0).id);
+                    RenderController.need_to_delete3D.get(0).animations3D.remove(0);
+                    RenderController.need_to_delete3D.remove(0);
                 }
                 modelBatch.end();
                 spriteBatch.begin();
-                for (ElementUI element : CanTouch.UI_elements) {
+                for (ElementUI element : RenderController.UI_elements) {
                     element.sprite.draw(spriteBatch);
                 }
                 font.getData().setScale(2.5f);
                 for (int i = 0; i < Server.players_count; i++) {
-                    font.draw(spriteBatch, player_UI_names[i], 10, CanTouch.UI_elements.get(0).sprite.getHeight() * i + 50 * i + 40);
+                    font.draw(spriteBatch, player_UI_names[i], 10, RenderController.UI_elements.get(0).sprite.getHeight() * i + 50 * i + 40);
                 }
                 black_fon.setAlpha(0.75f);
                 black_fon.draw(spriteBatch);
                 //затенение экрана
-                now_looking_card_sprite = CanTouch.now_looking_card.sprite;
-                now_looking_card_sprite.setScale(2);
-                now_looking_card_sprite.setPosition(Gdx.graphics.getWidth() / 2 - now_looking_card_sprite.getWidth()/3 , Gdx.graphics.getHeight() / 2 - now_looking_card_sprite.getHeight()/6);
-                now_looking_card_sprite.draw(spriteBatch);
+//                now_looking_card_sprite = new Sprite(CanTouch.now_looking_card.sprite.getTexture(),CanTouch.now_looking_card.sprite.getTexture().getWidth(),CanTouch.now_looking_card.sprite.getTexture().getHeight());
+//                now_looking_card_sprite.setScale(2);
+//                now_looking_card_sprite.setCenter(now_looking_card_sprite.getWidth()/2f,now_looking_card_sprite.getHeight()/2f);
+//                now_looking_card_sprite.setPosition(Gdx.graphics.getWidth() / 2 - now_looking_card_sprite.getWidth()/2 , Gdx.graphics.getHeight() / 2 - now_looking_card_sprite.getHeight()/2);
+//                now_looking_card_sprite.draw(spriteBatch);
                 spriteBatch.end();
                 break;
             }
@@ -390,18 +315,18 @@ public class GameScreen implements Screen {
                 for (Card card : decks) {
                     modelBatch.render(card.instance, environment);
                 }
-                if (!CanTouch.renderable_3d.isEmpty()) {
-                    for (Card card : CanTouch.renderable_3d) {
+                if (!RenderController.renderable_3d.isEmpty()) {
+                    for (Card card : RenderController.renderable_3d) {
                         modelBatch.render(card.instance);
                     }
                 }
                 modelBatch.end();
-                spriteBatch.begin();
-                if (!CanTouch.renderable_2d.isEmpty()) {
-                    for (Card card : CanTouch.renderable_2d) {
-                        card.sprite.draw(spriteBatch);
-                    }
-                }
+//                spriteBatch.begin();
+//                if (!CanTouch.renderable_2d.isEmpty()) {
+//                    for (Card card : CanTouch.renderable_2d) {
+//                        card.sprite.draw(spriteBatch);
+//                    }
+//                }
                 black_fon.setAlpha(0.75f);
                 black_fon.draw(spriteBatch);
                 font.getData().setScale(5);
@@ -415,10 +340,9 @@ public class GameScreen implements Screen {
                 //смена игрока
                 Gdx.input.setInputProcessor(changing_stage);
                 spriteBatch.begin();
-                black_fon.setAlpha(1);
-                black_fon.draw(spriteBatch);
+                change_player_background.draw(spriteBatch);
                 font.getData().setScale(5);
-                font.draw(spriteBatch, "press button to start " + Server.player_now.name + "`s turn", Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() / 5, Gdx.graphics.getHeight() / 2);
+                font.draw(spriteBatch, "press button to start " + Server.player_now.name + "`s turn", Gdx.graphics.getWidth() / 2 -("press button to start " + Server.player_now.name + "`s turn").length() * (font.getData().xHeight/3), Gdx.graphics.getHeight() / 2);
                 spriteBatch.end();
                 changing_stage.act();
                 changing_stage.draw();

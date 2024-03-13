@@ -41,7 +41,7 @@ public class Player {
     public Player(Vector3 pos, int num) {
         Gdx.app.setLogLevel(Application.LOG_ERROR);// для логирования ошибок
         player_number = num;
-        camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         // дальность обзора камеры
         camera.near = 1;
         camera.far = 2000;
@@ -49,6 +49,7 @@ public class Player {
         camera.lookAt(0, 0, 0);
         inputController = new MyCameraInputController(camera);
         camera.update();// важно, при отсутсвии к камере не применятся изменения
+        System.out.println(camera.direction);
         health = 20;
         power_points = 0;
         win_points = 0;
@@ -116,60 +117,60 @@ public class Player {
         Gdx.input.setInputProcessor(inputController);
     }
 
-    public void getHand() {
-        // получение карт в руку
-        hand.clear();// не должно возникать случаев использования, но пусть будет как мера безопасности
-        deck.trimToSize();
-        if (deck.size() < hand_size) {
-            Collections.shuffle(trash);
-            deck.addAll(trash);
-            trash.clear();
-        }
-        for (int i = 0; i < hand_size; i++) {
-            hand.add(deck.get(i));
-            if (!CanTouch.renderable_3d.contains(deck.get(i)))
-                CanTouch.renderable_3d.add(deck.get(i));// добавление карт в список отрисовываемых 3д объектов
-        }
-        for (int i = 0; i < hand_size; i++) {
-            deck.remove(0);
-        }
-        for (int i = 0; i < hand_size; i++) {
-            hand.get(i).calculate_inHand_pos(hand_size, i, false);
-            hand.get(i).animations2D.clear();//не должно возникать случаев использования,но пусть будет как мера безопасности
-            hand.get(i).convertTo2D(camera.position);// перевод карт в состояние 2д,после создания нормальных анимаций камеры удалить
-            hand.get(i).animations2D.add(hand.get(i).doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(hand.get(i).getInHandX(), hand.get(i).getInHandY()), 20, hand.get(i).getInHand_rotation() - hand.get(i).sprite.getRotation(), "laying_out_card"));// перовод карт в позиции руки
-        }
-    }
+//    public void getHand() {
+//        // получение карт в руку
+//        hand.clear();// не должно возникать случаев использования, но пусть будет как мера безопасности
+//        deck.trimToSize();
+//        if (deck.size() < hand_size) {
+//            Collections.shuffle(trash);
+//            deck.addAll(trash);
+//            trash.clear();
+//        }
+//        for (int i = 0; i < hand_size; i++) {
+//            hand.add(deck.get(i));
+//            if (!CanTouch.renderable_3d.contains(deck.get(i)))
+//                CanTouch.renderable_3d.add(deck.get(i));// добавление карт в список отрисовываемых 3д объектов
+//        }
+//        for (int i = 0; i < hand_size; i++) {
+//            deck.remove(0);
+//        }
+//        for (int i = 0; i < hand_size; i++) {
+//            hand.get(i).calculate_inHand_pos(hand_size, i, false);
+//            hand.get(i).animations2D.clear();//не должно возникать случаев использования,но пусть будет как мера безопасности
+//            hand.get(i).convertTo2D(camera.position);// перевод карт в состояние 2д,после создания нормальных анимаций камеры удалить
+//            hand.get(i).animations2D.add(hand.get(i).doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(hand.get(i).getInHandX(), hand.get(i).getInHandY()), 20, hand.get(i).getInHand_rotation() - hand.get(i).sprite.getRotation(), "laying_out_card"));// перовод карт в позиции руки
+//        }
+//    }
 
-    public void getCard() {
-        // получение одной карты
-        if (deck.isEmpty()) {
-            deck.addAll(trash);
-            Collections.shuffle(deck);
-            trash.clear();
-        }
-        Card card = deck.get(0);
-        deck.remove(0);
-        card.setCardPos(deck_pos);
-        CanTouch.renderable_3d.add(card);
-        card.convertTo2D(camera.position);
-        hand.add(card);
-        for (int i = 0; i < hand_size; i++) {
-            hand.get(i).calculate_inHand_pos(hand_size, i, false);
+//    public void getCard() {
+//        // получение одной карты
+//        if (deck.isEmpty()) {
+//            deck.addAll(trash);
+//            Collections.shuffle(deck);
+//            trash.clear();
+//        }
+//        Card card = deck.get(0);
+//        deck.remove(0);
+//        card.setCardPos(deck_pos);
+//        CanTouch.renderable_3d.add(card);
+//        card.convertTo2D(camera.position);
+//        hand.add(card);
+//        for (int i = 0; i < hand_size; i++) {
+//            hand.get(i).calculate_inHand_pos(hand_size, i, false);
+//
+//        }
+//        card.animations2D.add(card.doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(card.getInHandX(), card.getInHandY()), 20, card.getInHand_rotation() - card.sprite.getRotation(), "laying_out_card"));
+//    }
 
-        }
-        card.animations2D.add(card.doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(card.getInHandX(), card.getInHandY()), 20, card.getInHand_rotation() - card.sprite.getRotation(), "laying_out_card"));
-    }
-
-    public void refresh_hands_positions() {
-        //вычисление актуальных позиций карт в руке
-        for (int i = 0; i < hand.size(); i++) {
-            hand.trimToSize();
-            Card card = hand.get(i);
-            card.calculate_inHand_pos(hand.size(), i, false);
-            card.animations2D.add(card.doAnimation2D(new Vector2(card.sprite.getX(), card.sprite.getY()), new Vector2(card.getInHandX(), card.getInHandY()), 10, card.getInHand_rotation() - card.sprite.getRotation(), "relocate_after_discard"));
-        }
-    }
+//    public void refresh_hands_positions() {
+//        //вычисление актуальных позиций карт в руке
+//        for (int i = 0; i < hand.size(); i++) {
+//            hand.trimToSize();
+//            Card card = hand.get(i);
+//            card.calculate_inHand_pos(hand.size(), i, false);
+//            card.animations2D.add(card.doAnimation2D(new Vector2(card.sprite.getX(), card.sprite.getY()), new Vector2(card.getInHandX(), card.getInHandY()), 10, card.getInHand_rotation() - card.sprite.getRotation(), "relocate_after_discard"));
+//        }
+//    }
 
     public void refresh_health(int delta) {
         //обновление экранного отображения здоровья после его обновления

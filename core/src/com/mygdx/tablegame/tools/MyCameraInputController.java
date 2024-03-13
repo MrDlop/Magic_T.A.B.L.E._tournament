@@ -12,7 +12,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.mygdx.tablegame.cards.Card;
-import com.mygdx.tablegame.game_logic.CanTouch;
+import com.mygdx.tablegame.game_logic.RenderController;
 import com.mygdx.tablegame.game_logic.GameController;
 import com.mygdx.tablegame.game_logic.GameScreen;
 import com.mygdx.tablegame.game_logic.GameState;
@@ -120,45 +120,45 @@ public class MyCameraInputController extends GestureDetector {
             if (GameScreen.card_looking) {
                 GameScreen.card_looking = false;
                 GameController.state = GameState.RUN;
-                CanTouch.now_looking_card = null;
+                RenderController.now_looking_card = null;
             }
             y = Gdx.graphics.getHeight() - y;
-            for (Touchable touchable : CanTouch.sprite_collisions) {
-                if (touchable.getSpriteHitBox().contains(x, y)) {
-                    touch3d = false;
-                    //если прошло менее одной секунды с касания карты(написать в правилах)
-                    if (TimeUtils.timeSinceMillis(touchable.prevTouchTime) < 1000 && CanTouch.now_selected_card == touchable) {
-                        touchable.sprite_doubleTouched();
-                        touchable.updateTime();
-                        break;
-                    } else {
-                        touchable.sprite_touched();
-                        touchable.updateTime();
-                        break;
-                    }
-                }
-
-            }
+//            for (Touchable touchable : CanTouch.sprite_collisions) {
+//                if (touchable.getSpriteHitBox().contains(x, y)) {
+//                    touch3d = false;
+//                    //если прошло менее одной секунды с касания карты(написать в правилах)
+//                    if (TimeUtils.timeSinceMillis(touchable.prevTouchTime) < 1000 && CanTouch.now_selected_card == touchable) {
+//                        touchable.sprite_doubleTouched();
+//                        touchable.updateTime();
+//                        break;
+//                    } else {
+//                        touchable.sprite_touched();
+//                        touchable.updateTime();
+//                        break;
+//                    }
+//                }
+//
+//            }
             if (touch3d) {
                 y = Gdx.graphics.getHeight() - y;
                 Ray ray = controller.camera.getPickRay(x, y);
                 Vector3 tPos = new Vector3();
                 int touchInd = -1;
                 float minDistance = 10000;
-                for (Touchable touchable : CanTouch.collisions) {
+                for (Touchable touchable : RenderController.collisions) {
                     if (Intersector.intersectRayBounds(ray, touchable.getHitBox(), tPos))
                         if (Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z) < minDistance) {
-                            touchInd = CanTouch.collisions.indexOf(touchable);
+                            touchInd = RenderController.collisions.indexOf(touchable);
                             minDistance = Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z);
                         }
                 }
                 if (touchInd != -1) {
-                    if (TimeUtils.timeSinceMillis(CanTouch.collisions.get(touchInd).prevTouchTime) < 1000) {
-                        CanTouch.collisions.get(touchInd).doubleTouched();
-                        CanTouch.collisions.get(touchInd).updateTime();
+                    if (TimeUtils.timeSinceMillis(RenderController.collisions.get(touchInd).prevTouchTime) < 1000) {
+                        RenderController.collisions.get(touchInd).doubleTouched();
+                        RenderController.collisions.get(touchInd).updateTime();
                     } else {
-                        CanTouch.collisions.get(touchInd).touched();
-                        CanTouch.collisions.get(touchInd).updateTime();
+                        RenderController.collisions.get(touchInd).touched();
+                        RenderController.collisions.get(touchInd).updateTime();
                     }
                 }
             }
@@ -172,15 +172,15 @@ public class MyCameraInputController extends GestureDetector {
             Vector3 tPos = new Vector3();
             int touchInd = -1;
             float minDistance = 10000;
-            for (Touchable touchable : CanTouch.collisions) {
+            for (Touchable touchable : RenderController.collisions) {
                 if (Intersector.intersectRayBounds(ray, touchable.getHitBox(), tPos))
                     if (Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z) < minDistance) {
-                        touchInd = CanTouch.collisions.indexOf(touchable);
+                        touchInd = RenderController.collisions.indexOf(touchable);
                         minDistance = Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z);
                     }
             }
             if (touchInd != -1) {
-                CanTouch.now_looking_card = (Card) CanTouch.collisions.get(touchInd);
+                RenderController.now_looking_card = (Card) RenderController.collisions.get(touchInd);
                 GameController.state = GameState.CARD_LOOKING;
             }
             return true;

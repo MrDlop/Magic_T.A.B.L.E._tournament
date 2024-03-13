@@ -7,12 +7,12 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import java.util.ArrayList;
 //класс, используемый для хранения текстур и их быстрой смены
 //#TODO заменить на Map с статическим массивом строк(названий текстур)
-public class TextureStorage {
+public class AssetStorage {
     public static TextureAttribute[][] textures3d = new TextureAttribute[16][2];
     public static Texture[][] textures2d = new Texture[16][2];
     public static Texture[][] textures_UI=new Texture[2][];
 
-    public TextureStorage() {
+    public AssetStorage() {
         ArrayList<TextureAttribute> temp3d = new ArrayList<>();
         ArrayList<Texture> temp2d = new ArrayList<>();
         TextureAttribute simple3D_texture1 = new TextureAttribute(TextureAttribute.Diffuse, new Texture("card_texture1.png"));

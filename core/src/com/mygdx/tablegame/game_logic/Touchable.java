@@ -9,16 +9,12 @@ import com.badlogic.gdx.utils.TimeUtils;
 
 import java.util.ArrayList;
 // класс для реализации RayCast, содержит минимально необходимый для это набор полей и методов, от него наследуются карты
-public class Touchable {
+public class Touchable extends RenderableObject {
     public BoundingBox hitBox;//"коробка", которая считается по минимальным максимальным точкам арены
     public long prevTouchTime=TimeUtils.millis();//время предыдущего касания
-    public Sprite sprite;
     public BoundingBox getHitBox() {return  hitBox;} //переопределить в наследнике
-    public Rectangle getSpriteHitBox(){return sprite.getBoundingRectangle();}
     public void touched(){};
     public void doubleTouched(){};
-    public void sprite_touched(){};
-    public void sprite_doubleTouched(){};
     public void updateTime(){
         prevTouchTime= TimeUtils.millis();
     }

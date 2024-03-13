@@ -192,7 +192,7 @@ public class ServerOnline {
         int y = market_deck.size();
         for (int i = 0; i < 5 - y; i++) {
             Card card = ServerOnline.get_card(-1, "main_deck");
-            CanTouch.renderable_3d.add(card);
+            RenderController.renderable_3d.add(card);
             System.out.println(actual_card_rotation);
             market_deck.add(card);
         }
@@ -319,7 +319,7 @@ public class ServerOnline {
     public static void turn_ended() {
         turn_end_button_pressed = true;
         for (Card card : player_now.hand) {
-            card.convertTo3D(player_now.camera.position, player_now.trash_pos);
+            //card.convertTo3D(player_now.camera.position, player_now.trash_pos);
         }
         for (Card card : player_now.on_table_cards) {
             card.animations3D.add(new Animation(card.update_pos(), player_now.trash_pos, 2000, "to_trash_end"));
@@ -336,16 +336,16 @@ public class ServerOnline {
             prev_player = player_now;
             player_now = players[turns_lasts % players_count];
         }
-        player_now.player_init();
-        GameController.state = GameState.CHANGE_PLAYER;
-        if (player_now.hand.isEmpty()) player_now.getHand();
-        else {
-            player_now.refresh_hands_positions();
-            for (Card card : player_now.hand) {
-                if (!CanTouch.renderable_2d.contains(card)) CanTouch.renderable_2d.add(card);
-                if (!CanTouch.sprite_collisions.contains(card))
-                    CanTouch.sprite_collisions.add(card);
-            }
-        }
+//        player_now.player_init();
+//        GameController.state = GameState.CHANGE_PLAYER;
+//        if (player_now.hand.isEmpty()) player_now.getHand();
+//        else {
+//            player_now.refresh_hands_positions();
+//            for (Card card : player_now.hand) {
+//                if (!CanTouch.renderable_2d.contains(card)) CanTouch.renderable_2d.add(card);
+//                if (!CanTouch.sprite_collisions.contains(card))
+//                    CanTouch.sprite_collisions.add(card);
+//            }
+//        }
     }
 }

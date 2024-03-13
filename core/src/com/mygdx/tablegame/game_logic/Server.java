@@ -122,11 +122,11 @@ public class Server {
         }
         player_now = players[0];
         turns_lasts = 0;
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 4; i++) {
             Fire_ball card = new Fire_ball();
             main_deck.add(card);
         }
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 6; i++) {
             Magic_dog card = new Magic_dog();
             main_deck.add(card);
         }
@@ -142,7 +142,7 @@ public class Server {
             Crown card = new Crown();
             main_deck.add(card);
         }
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 4; i++) {
             SmallKnight card = new SmallKnight();
             main_deck.add(card);
         }
@@ -150,7 +150,7 @@ public class Server {
             Summon card = new Summon();
             main_deck.add(card);
         }
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             SunFaced card = new SunFaced();
             main_deck.add(card);
         }
@@ -217,7 +217,7 @@ public class Server {
             // получение отсутствующих в магазине карт
             Card card = Server.get_card(-1, "main_deck");
             card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,actual_card_rotation.y);
-            CanTouch.renderable_3d.add(card);
+            RenderController.renderable_3d.add(card);
             market_deck.add(card);
         }
         for (int i = 0; i < 5; i++) {
@@ -346,9 +346,12 @@ public class Server {
         turn_end_button_pressed = true;
         //перемещение карт в сброс
         for (Card card : player_now.hand) {
-            card.convertTo3D(player_now.camera.position, player_now.trash_pos);
+            //card.convertTo3D(player_now.camera.position, player_now.trash_pos);
         }
         for (Card card : player_now.on_table_cards) {
+            card.animations3D.add(new Animation(card.update_pos(), player_now.trash_pos, 2000, "to_trash_end"));
+        }
+        for (Card card:player_now.trash) {
             card.animations3D.add(new Animation(card.update_pos(), player_now.trash_pos, 2000, "to_trash_end"));
         }
         turns_lasts++;
@@ -365,14 +368,14 @@ public class Server {
         }
         player_now.player_init();
         GameController.state = GameState.CHANGE_PLAYER;//состояние начала хода игрока
-        if (player_now.hand.isEmpty()) player_now.getHand();
-        else {
-            player_now.refresh_hands_positions();
-            for (Card card : player_now.hand) {
-                if (!CanTouch.renderable_2d.contains(card)) CanTouch.renderable_2d.add(card);
-                if (!CanTouch.sprite_collisions.contains(card))
-                    CanTouch.sprite_collisions.add(card);
-            }
-        }
+//        if (player_now.hand.isEmpty()) player_now.getHand();
+//        else {
+//            player_now.refresh_hands_positions();
+//            for (Card card : player_now.hand) {
+//                if (!CanTouch.renderable_2d.contains(card)) CanTouch.renderable_2d.add(card);
+//                if (!CanTouch.sprite_collisions.contains(card))
+//                    CanTouch.sprite_collisions.add(card);
+//            }
+//        }
     }
 }
