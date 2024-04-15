@@ -10,6 +10,7 @@ import java.util.Deque;
 import java.util.Queue;
 
 public class RenderableObject {
+
     ModelInstance modelInstance;
     boolean enable=false;
     ArrayList<Animation> animations_list;
@@ -24,11 +25,14 @@ public class RenderableObject {
                 return;
             }
             if(animation.start_time==-1){
-                animation.start_time=TimeUtils.millis();
+                animation.startAnimation();
             }
             else {
                 animation.update();
             }
         }
+    }
+    public ModelInstance getModelInstance(){
+        return modelInstance;
     }
 }

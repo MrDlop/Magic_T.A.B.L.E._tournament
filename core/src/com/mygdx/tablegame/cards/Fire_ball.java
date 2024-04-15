@@ -21,4 +21,5 @@ public class Fire_ball extends Card {
             }
         }
     }
+
 }

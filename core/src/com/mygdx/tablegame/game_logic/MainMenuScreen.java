@@ -138,6 +138,7 @@ public class MainMenuScreen implements Screen {
                 names.add("biba");
                 names.add("boba");
                 names.add("aboba");
+                GameController.constants.current_preset=GameController.constants.preset_4_players;
                 Server.server_init(names);
                 game.setScreen(new GameScreen());
                 GameController.state = GameState.CHANGE_PLAYER;
@@ -163,7 +164,7 @@ public class MainMenuScreen implements Screen {
                 enter_players_name.setText("");// нет способа добавить подсказку, поэтому следует при касании поля для ввода его очищать от надписи, выполняющей роль подсказки
             }
         });
-        enter_players_name.clearListeners();
+//        enter_players_name.clearListeners();
         add_player_button.setSize(500, 200);
         add_player_button.setPosition(Gdx.graphics.getWidth() * 0.67f, Gdx.graphics.getHeight() / 6);
         add_player_button.addListener(new ClickListener() {
@@ -182,6 +183,16 @@ public class MainMenuScreen implements Screen {
         begin_game_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 //запуск игры
+                names.trimToSize();
+                if(names.size()==2){
+                    GameController.constants.current_preset=GameController.constants.preset_2_players;
+                }
+                if(names.size()==3){
+                    GameController.constants.current_preset=GameController.constants.preset_3_players;
+                }
+                if(names.size()==4){
+                    GameController.constants.current_preset=GameController.constants.preset_4_players;
+                }
                 Server.server_init(names);
                 game.setScreen(new GameScreen());
                 GameController.state = GameState.CHANGE_PLAYER;
@@ -223,17 +234,17 @@ public class MainMenuScreen implements Screen {
         create_session_button.setPosition(Gdx.graphics.getWidth() / 2.2f - create_session_button.getWidth() / 2, Gdx.graphics.getHeight() / 2 - create_session_button.getHeight() / 2);
         create_session_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                URI uri = null;
-                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
-                    try {
-                        uri=new URI("wss://magic-t-a-b-l-e-tournament-python-server-t8rd.onrender.com");
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
-                    ServerOnline.websocketClient=new WebsocketClient(uri);
-                    ServerOnline.this_player_name=enter_players_name.getText();
-                    ServerOnline.websocketClient.onCreate(enter_session_name.getText(),ServerOnline.this_player_name);
-                }
+//                URI uri = null;
+//                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
+//                    try {
+//                        uri=new URI("wss://magic-t-a-b-l-e-tournament-python-server-t8rd.onrender.com");
+//                    } catch (URISyntaxException e) {
+//                        e.printStackTrace();
+//                    }
+//                    ServerOnline.websocketClient=new WebsocketClient(uri);
+//                    ServerOnline.this_player_name=enter_players_name.getText();
+//                    ServerOnline.websocketClient.onCreate(enter_session_name.getText(),ServerOnline.this_player_name);
+//                }
             }
         });
         join_session_button = new TextButton("join session", skin);
@@ -241,17 +252,17 @@ public class MainMenuScreen implements Screen {
         join_session_button.setPosition(Gdx.graphics.getWidth() / 2.2f - join_session_button.getWidth() / 2, Gdx.graphics.getHeight() / 2 - join_session_button.getHeight() * 1.5f);
         join_session_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                URI uri = null;
-                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
-                    try {
-                        uri=new URI("wss://magic-t-a-b-l-e-tournament-python-server-t8rd.onrender.com");
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
-                    ServerOnline.websocketClient=new WebsocketClient(uri);
-                    ServerOnline.this_player_name=enter_players_name.getText();
-                    ServerOnline.websocketClient.onConnect(enter_session_name.getText(),ServerOnline.this_player_name);
-                }
+//                URI uri = null;
+//                if(!enter_session_name.getText().equals("") && !enter_players_name.getText().equals("enter session name")){
+//                    try {
+//                        uri=new URI("wss://magic-t-a-b-l-e-tournament-python-server-t8rd.onrender.com");
+//                    } catch (URISyntaxException e) {
+//                        e.printStackTrace();
+//                    }
+//                    ServerOnline.websocketClient=new WebsocketClient(uri);
+//                    ServerOnline.this_player_name=enter_players_name.getText();
+//                    ServerOnline.websocketClient.onConnect(enter_session_name.getText(),ServerOnline.this_player_name);
+//                }
             }
         });
         begin_online_game_button = new TextButton("start game", skin);

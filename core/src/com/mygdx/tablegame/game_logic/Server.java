@@ -17,8 +17,9 @@ import com.mygdx.tablegame.tools.Animation;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.TimerTask;
 
-// класс для построения взаимодействий между другими классами и логики игровых ходов, несмотря на название, пока не имеет отношения к сетевой игре
+// класс для построения взаимодействий ме жду другими классами и логики игровых ходов, несмотря на название, пока не имеет отношения к сетевой игре
 public class Server {
     private static ArrayList<Card> main_deck = new ArrayList<>(); // основная колода, откуда берутся карты для пополнения магазина
     public static Vector3 main_deck_pos = new Vector3(-2.5f, 30.5f, 0);
@@ -39,62 +40,124 @@ public class Server {
         // пока положения задаются вручную #TODO добавить автоматический расчет положения камер и игроков
         players = new Player[players_count];
         if (players_count == 2) {
-            Player player = new Player(new Vector3(0, 50, 40), 0);
-            player.deck_pos = new Vector3(13, 29.9f, 28);//  положение колоды на столе
-            player.trash_pos = new Vector3(18, 29.7f, 28);
-            player.played_card_pos = new Vector3(0, 30, 25);
+            Player player = new Player(0);
+            Constants.PlayerCoordinateInfo player1CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[0];
+            player.deck_pos = player1CoordinateInfo.deck_pos;
+            player.hand_pos = player1CoordinateInfo.hand_pos;
+            player.trash_pos = player1CoordinateInfo.trash_pos;
+            player.played_card_pos = player1CoordinateInfo.played_card_pos;
+            player.shop_pos = player1CoordinateInfo.shop_pos;
+            player.camera_on_played_card_pos = player1CoordinateInfo.camera_on_played_card_pos;
+            player.camera_on_hand_pos = player1CoordinateInfo.camera_on_hand_pos;
+            player.camera_on_shop_pos = player1CoordinateInfo.camera_on_shop_pos;
+            player.setStandart_card_world_rotation(player1CoordinateInfo.laying_card_global_rotation);
             players[0] = player;
-            Player player1 = new Player(new Vector3(0, 50, -40), 1);
-            player1.deck_pos = new Vector3(-13, 29.9f, -28);
-            player1.trash_pos = new Vector3(-18, 29.7f, -28);
-            player1.played_card_pos = new Vector3(0, 30, -25);
-            player1.setCard_rot_modifier(180);
+
+            Player player1 = new Player(1);
+            Constants.PlayerCoordinateInfo player2CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[1];
+            player1.deck_pos = player2CoordinateInfo.deck_pos;
+            player1.hand_pos = player2CoordinateInfo.hand_pos;
+            player1.trash_pos = player2CoordinateInfo.trash_pos;
+            player1.played_card_pos = player2CoordinateInfo.played_card_pos;
+            player1.shop_pos = player2CoordinateInfo.shop_pos;
+            player1.camera_on_played_card_pos = player2CoordinateInfo.camera_on_played_card_pos;
+            player1.camera_on_hand_pos = player2CoordinateInfo.camera_on_hand_pos;
+            player1.camera_on_shop_pos = player2CoordinateInfo.camera_on_shop_pos;
+            player.setStandart_card_world_rotation(player2CoordinateInfo.laying_card_global_rotation);
             players[1] = player1;
         }
         if (players_count == 3) {
-            Player player = new Player(new Vector3(0, 50, 40), 0);
-            player.deck_pos = new Vector3(13, 29.9f, 28);
-            player.trash_pos = new Vector3(18, 29.7f, 28);
-            player.played_card_pos = new Vector3(0, 30, 25);
-            player.setCard_rot_modifier(0);
+            Player player = new Player(0);
+            Constants.PlayerCoordinateInfo player1CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[0];
+            player.deck_pos = player1CoordinateInfo.deck_pos;
+            player.hand_pos = player1CoordinateInfo.hand_pos;
+            player.trash_pos = player1CoordinateInfo.trash_pos;
+            player.played_card_pos = player1CoordinateInfo.played_card_pos;
+            player.shop_pos = player1CoordinateInfo.shop_pos;
+            player.camera_on_played_card_pos = player1CoordinateInfo.camera_on_played_card_pos;
+            player.camera_on_hand_pos = player1CoordinateInfo.camera_on_hand_pos;
+            player.camera_on_shop_pos = player1CoordinateInfo.camera_on_shop_pos;
+            player.setStandart_card_world_rotation(player1CoordinateInfo.laying_card_global_rotation);
             players[0] = player;
-            Player player1 = new Player(new Vector3(30, 50, 0), 1);
-            player1.deck_pos = new Vector3(18, 29.9f, -10);
-            player1.trash_pos = new Vector3(18, 29.7f, -15);
-            player1.played_card_pos = new Vector3(19, 30, -3);
-            player1.setCard_rot_modifier(-90);
+
+            Player player1 = new Player(1);
+            Constants.PlayerCoordinateInfo player2CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[1];
+            player1.deck_pos = player2CoordinateInfo.deck_pos;
+            player1.hand_pos = player2CoordinateInfo.hand_pos;
+            player1.trash_pos = player2CoordinateInfo.trash_pos;
+            player1.played_card_pos = player2CoordinateInfo.played_card_pos;
+            player1.shop_pos = player2CoordinateInfo.shop_pos;
+            player1.camera_on_played_card_pos = player2CoordinateInfo.camera_on_played_card_pos;
+            player1.camera_on_hand_pos = player2CoordinateInfo.camera_on_hand_pos;
+            player1.camera_on_shop_pos = player2CoordinateInfo.camera_on_shop_pos;
+            player1.setStandart_card_world_rotation(player2CoordinateInfo.laying_card_global_rotation);
             players[1] = player1;
-            Player player2 = new Player(new Vector3(0, 50, -40), 2);
-            player2.deck_pos = new Vector3(-13, 29.9f, -28);
-            player2.trash_pos = new Vector3(-18, 29.7f, -28);
-            player2.played_card_pos = new Vector3(0, 30, -25);
-            player2.setCard_rot_modifier(180);
-            players[2] = player2;
+
+            Player player2 = new Player(2);
+            Constants.PlayerCoordinateInfo player3CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[2];
+            player2.deck_pos = player3CoordinateInfo.deck_pos;
+            player2.hand_pos = player3CoordinateInfo.hand_pos;
+            player2.trash_pos = player3CoordinateInfo.trash_pos;
+            player2.played_card_pos = player3CoordinateInfo.played_card_pos;
+            player2.shop_pos = player3CoordinateInfo.shop_pos;
+            player2.camera_on_played_card_pos = player3CoordinateInfo.camera_on_played_card_pos;
+            player2.camera_on_hand_pos = player3CoordinateInfo.camera_on_hand_pos;
+            player2.camera_on_shop_pos = player3CoordinateInfo.camera_on_shop_pos;
+            player2.setStandart_card_world_rotation(player3CoordinateInfo.laying_card_global_rotation);
+            players[2] = player1;
 
         }
         if (players_count == 4) {
-            Player player = new Player(new Vector3(0, 50, 40), 0);
-            player.deck_pos = new Vector3(13, 29.9f, 28);
-            player.trash_pos = new Vector3(18, 29.7f, 28);
-            player.played_card_pos = new Vector3(0, 30, 25);
+            Player player = new Player(0);
+            Constants.PlayerCoordinateInfo player1CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[0];
+            player.deck_pos = player1CoordinateInfo.deck_pos;
+            player.hand_pos = player1CoordinateInfo.hand_pos;
+            player.trash_pos = player1CoordinateInfo.trash_pos;
+            player.played_card_pos = player1CoordinateInfo.played_card_pos;
+            player.shop_pos = player1CoordinateInfo.shop_pos;
+            player.camera_on_played_card_pos = player1CoordinateInfo.camera_on_played_card_pos;
+            player.camera_on_hand_pos = player1CoordinateInfo.camera_on_hand_pos;
+            player.camera_on_shop_pos = player1CoordinateInfo.camera_on_shop_pos;
+            player.setStandart_card_world_rotation(player1CoordinateInfo.laying_card_global_rotation);
             players[0] = player;
-            Player player1 = new Player(new Vector3(30, 50, 0), 1);
-            player1.deck_pos = new Vector3(18, 29.9f, -10);
-            player1.trash_pos = new Vector3(18, 29.7f, -15);
-            player1.played_card_pos = new Vector3(19, 30, -8);
-            player1.setCard_rot_modifier(-90);
+
+            Player player1 = new Player(1);
+            Constants.PlayerCoordinateInfo player2CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[1];
+            player1.deck_pos = player2CoordinateInfo.deck_pos;
+            player1.hand_pos = player2CoordinateInfo.hand_pos;
+            player1.trash_pos = player2CoordinateInfo.trash_pos;
+            player1.played_card_pos = player2CoordinateInfo.played_card_pos;
+            player1.shop_pos = player2CoordinateInfo.shop_pos;
+            player1.camera_on_played_card_pos = player2CoordinateInfo.camera_on_played_card_pos;
+            player1.camera_on_hand_pos = player2CoordinateInfo.camera_on_hand_pos;
+            player1.camera_on_shop_pos = player2CoordinateInfo.camera_on_shop_pos;
+            player1.setStandart_card_world_rotation(player2CoordinateInfo.laying_card_global_rotation);
             players[1] = player1;
-            Player player2 = new Player(new Vector3(0, 50, -40), 2);
-            player2.deck_pos = new Vector3(-13, 29.9f, -28);
-            player2.trash_pos = new Vector3(-18, 29.7f, -28);
-            player2.played_card_pos = new Vector3(0, 30, -25);
-            player2.setCard_rot_modifier(-180);
+
+            Player player2 = new Player(2);
+            Constants.PlayerCoordinateInfo player3CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[2];
+            player2.deck_pos = player3CoordinateInfo.deck_pos;
+            player2.hand_pos = player3CoordinateInfo.hand_pos;
+            player2.trash_pos = player3CoordinateInfo.trash_pos;
+            player2.played_card_pos = player3CoordinateInfo.played_card_pos;
+            player2.shop_pos = player3CoordinateInfo.shop_pos;
+            player2.camera_on_played_card_pos = player3CoordinateInfo.camera_on_played_card_pos;
+            player2.camera_on_hand_pos = player3CoordinateInfo.camera_on_hand_pos;
+            player2.camera_on_shop_pos = player3CoordinateInfo.camera_on_shop_pos;
+            player2.setStandart_card_world_rotation(player3CoordinateInfo.laying_card_global_rotation);
             players[2] = player2;
-            Player player3 = new Player(new Vector3(-30, 50, 0), 3);
-            player3.deck_pos = new Vector3(-18, 29.9f, 10);
-            player3.trash_pos = new Vector3(-18, 29.7f, 15);
-            player3.played_card_pos = new Vector3(-19, 30, 8);
-            player3.setCard_rot_modifier(-270);
+
+            Player player3 = new Player(2);
+            Constants.PlayerCoordinateInfo player4CoordinateInfo = GameController.constants.current_preset.playerCoordinateInfos[3];
+            player3.deck_pos = player4CoordinateInfo.deck_pos;
+            player3.hand_pos = player4CoordinateInfo.hand_pos;
+            player3.trash_pos = player4CoordinateInfo.trash_pos;
+            player3.played_card_pos = player4CoordinateInfo.played_card_pos;
+            player3.shop_pos = player3CoordinateInfo.shop_pos;
+            player3.camera_on_played_card_pos = player4CoordinateInfo.camera_on_played_card_pos;
+            player3.camera_on_hand_pos = player4CoordinateInfo.camera_on_hand_pos;
+            player3.camera_on_shop_pos = player4CoordinateInfo.camera_on_shop_pos;
+            player3.setStandart_card_world_rotation(player4CoordinateInfo.laying_card_global_rotation);
             players[3] = player3;
         }
         // раздача карт игрокам и в колоды #TODO сделать файл для хранения количества и видов карт
@@ -103,19 +166,19 @@ public class Server {
             for (int j = 0; j < 7; j++) {
                 Znak card = new Znak();
                 card.setCardPos(players[i].deck_pos);
-                card.instance.transform.rotate(0, card.getHitBox().getCenterY(), 0, players[i].getCard_rot_modifier());
+                card.instance.setToWorldRotation(players[i].getStandart_card_world_rotation());
                 players[i].deck.add(card);
             }
             for (int j = 0; j < 2; j++) {
                 Pshik card = new Pshik();
                 card.setCardPos(players[i].deck_pos);
-                card.instance.transform.rotate(0, card.getHitBox().getCenterY(), 0, players[i].getCard_rot_modifier());
+                card.instance.setToWorldRotation(players[i].getStandart_card_world_rotation());
                 players[i].deck.add(card);
             }
             for (int j = 0; j < 2; j++) {
                 Fire_ball card = new Fire_ball();
                 card.setCardPos(players[i].deck_pos);
-                card.instance.transform.rotate(0, card.getHitBox().getCenterY(), 0, players[i].getCard_rot_modifier());
+                card.instance.setToWorldRotation(players[i].getStandart_card_world_rotation());
                 players[i].deck.add(card);
             }
             Collections.shuffle(players[i].deck);
@@ -216,7 +279,7 @@ public class Server {
         for (int i = 0; i < 5 - y; i++) {
             // получение отсутствующих в магазине карт
             Card card = Server.get_card(-1, "main_deck");
-            card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,actual_card_rotation.y);
+            card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, actual_card_rotation.y);
             RenderController.renderable_3d.add(card);
             market_deck.add(card);
         }
@@ -227,137 +290,138 @@ public class Server {
                 if (players_count == 2 && player_now.player_number == 0) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 0, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,-180);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, -180);
                 } else {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 180, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,-180);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, -180);
                 }
                 if (players_count == 3 && player_now.player_number == 0) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 0, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,0);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 0);
                 }
                 if (players_count == 3 && player_now.player_number == 1) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, -90, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,90);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 90);
                 }
                 if (players_count == 3 && player_now.player_number == 2) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, -180, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,90);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 90);
                 }
                 if (players_count == 4 && player_now.player_number == 0) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 90, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,90);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 90);
                 }
                 if (players_count == 4 && player_now.player_number == 1) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 180, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,90);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 90);
                 }
                 if (players_count == 4 && player_now.player_number == 2) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 270, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,90);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 90);
                 }
                 if (players_count == 4 && player_now.player_number == 3) {
                     if (i == 0)
                         actual_card_rotation.set(actual_card_rotation.x, 0, actual_card_rotation.z);
-                    card.instance.transform.rotate(0,card.getHitBox().getCenterY(),0,90);
+                    card.getModelInstance().transform.rotate(0, card.getHitBox().getCenterY(), 0, 90);
                 }
             }
             // обновление позиций карт
             if (market_deck.get(i).in_market) {
-                if (players_count == 2) {
-                    if (player_now.player_number % 2 == 0) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
-                    } else {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                }
-                if (players_count == 3) {
-                    if (player_now.player_number == 0) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 1) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 2) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                }
-                if (players_count == 4) {
-                    if (player_now.player_number == 0) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 1) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 2) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 3) {
-                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x, market_deck_pos.y, -market_deck_pos.z + card.getHitBox().getDepth() * i), 300, "to_market_deck"));
-                    }
-                }
-
-            } else {
-                if (players_count == 2) {
-                    if (player_now.player_number % 2 == 0) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
-                    } else {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                }
-                if (players_count == 3) {
-                    if (player_now.player_number == 0) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 1) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 2) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                }
-                if (players_count == 4) {
-                    if (player_now.player_number == 0) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 1) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 2) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
-                    }
-                    if (player_now.player_number == 3) {
-                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x, market_deck_pos.y, -market_deck_pos.z + card.getHitBox().getDepth() * i), 300, "to_market_deck"));
-                    }
-                }
+//                if (players_count == 2) {
+//                    if (player_now.player_number % 2 == 0) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
+//                    } else {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                }
+//                if (players_count == 3) {
+//                    if (player_now.player_number == 0) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 1) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 2) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                }
+//                if (players_count == 4) {
+//                    if (player_now.player_number == 0) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 1) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 2) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 3) {
+//                        card.animations3D.add(new Animation(market_deck.get(i).update_pos(), new Vector3(market_deck_pos.x, market_deck_pos.y, -market_deck_pos.z + card.getHitBox().getDepth() * i), 300, "to_market_deck"));
+//                    }
+//                }
+//
+//            } else {
+//                if (players_count == 2) {
+//                    if (player_now.player_number % 2 == 0) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
+//                    } else {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                }
+//                if (players_count == 3) {
+//                    if (player_now.player_number == 0) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 1) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 2) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x - card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                }
+//                if (players_count == 4) {
+//                    if (player_now.player_number == 0) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 1) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(-market_deck_pos.x, market_deck_pos.y, market_deck_pos.z - card.getHitBox().getDepth() * i), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 2) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x + card.getHitBox().getWidth() * i, market_deck_pos.y, -market_deck_pos.z), 300, "to_market_deck"));
+//                    }
+//                    if (player_now.player_number == 3) {
+//                        card.animations3D.add(new Animation(main_deck_pos, new Vector3(market_deck_pos.x, market_deck_pos.y, -market_deck_pos.z + card.getHitBox().getDepth() * i), 300, "to_market_deck"));
+//                    }
+//                }
             }
         }
     }
 
     public static void turn_ended() {
-        //завершение хода #TODO при отказе от 2д карт и анимаций, связанный с отрисовкой кадров, переделать блок смены ходов с добавлением таймеров, во избежание софлоков, связанных с преждевременным нажатием кнопки до конца анимации
+        //завершение хода
+        // #TODO при отказе от 2д карт и анимаций, связанный с отрисовкой кадров, переделать блок смены ходов с добавлением таймеров, во избежание софлоков, связанных с преждевременным нажатием кнопки до конца анимации
         turn_end_button_pressed = true;
         //перемещение карт в сброс
-        for (Card card : player_now.hand) {
-            //card.convertTo3D(player_now.camera.position, player_now.trash_pos);
-        }
-        for (Card card : player_now.on_table_cards) {
-            card.animations3D.add(new Animation(card.update_pos(), player_now.trash_pos, 2000, "to_trash_end"));
-        }
-        for (Card card:player_now.trash) {
-            card.animations3D.add(new Animation(card.update_pos(), player_now.trash_pos, 2000, "to_trash_end"));
-        }
+        GlobalEvents.activate_turnComplitedEvent();
         turns_lasts++;
         if (main_deck.isEmpty() && market_deck.size() < 5) {
             GameController.state = GameState.END;//конец игры при опустошении основной колоды
         }
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                turn_started();
+                GlobalEvents.activate_turnStartedEvent();
+            }
+        };
+        GameController.timer.schedule(timerTask, 2000);
     }
 
     public static void turn_started() {

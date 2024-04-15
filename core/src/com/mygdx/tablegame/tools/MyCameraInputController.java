@@ -35,7 +35,7 @@ public class MyCameraInputController extends GestureDetector {
     /**
      * The units to translate the camera when moved the full width or height of the screen.
      */
-    public float translateUnits = 10f; // FIXME auto calculate this based on the target
+    public float translateUnits = 10f;
     /**
      * The button for translating the camera along the direction axis
      */
@@ -115,44 +115,25 @@ public class MyCameraInputController extends GestureDetector {
 
         @Override
         public boolean tap(float x, float y, int count, int button) {
-            //обнаружение касаний 2д и 3д карт
-            boolean touch3d = true;//изначально проверяется не коснулся ли игрок спрайта и не нужно ли прекратить просмотр карты, т.к. это легче вычислить для устройства
             if (GameScreen.card_looking) {
                 GameScreen.card_looking = false;
                 GameController.state = GameState.RUN;
                 RenderController.now_looking_card = null;
             }
             y = Gdx.graphics.getHeight() - y;
-//            for (Touchable touchable : CanTouch.sprite_collisions) {
-//                if (touchable.getSpriteHitBox().contains(x, y)) {
-//                    touch3d = false;
-//                    //если прошло менее одной секунды с касания карты(написать в правилах)
-//                    if (TimeUtils.timeSinceMillis(touchable.prevTouchTime) < 1000 && CanTouch.now_selected_card == touchable) {
-//                        touchable.sprite_doubleTouched();
-//                        touchable.updateTime();
-//                        break;
-//                    } else {
-//                        touchable.sprite_touched();
-//                        touchable.updateTime();
-//                        break;
-//                    }
-//                }
-//
-//            }
-            if (touch3d) {
-                y = Gdx.graphics.getHeight() - y;
-                Ray ray = controller.camera.getPickRay(x, y);
-                Vector3 tPos = new Vector3();
-                int touchInd = -1;
-                float minDistance = 10000;
-                for (Touchable touchable : RenderController.collisions) {
-                    if (Intersector.intersectRayBounds(ray, touchable.getHitBox(), tPos))
-                        if (Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z) < minDistance) {
-                            touchInd = RenderController.collisions.indexOf(touchable);
-                            minDistance = Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z);
-                        }
-                }
-                if (touchInd != -1) {
+            Ray ray = controller.camera.getPickRay(x, y);
+            Vector3 tPos = new Vector3();
+            int touchInd = -1;
+            float minDistance = 10000;
+            for (Touchable touchable : RenderController.collisions) {
+                if (Intersector.intersectRayBounds(ray, touchable.getHitBox(), tPos))
+                    if (Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z) < minDistance) {
+                        touchInd = RenderController.collisions.indexOf(touchable);
+                        minDistance = Math.abs(tPos.x - ray.origin.x) + Math.abs(tPos.y - ray.origin.y) + Math.abs(tPos.z - ray.origin.z);
+                    }
+            }
+            if (touchInd != -1) {
+                if (!RenderController.collisions.isEmpty()) {
                     if (TimeUtils.timeSinceMillis(RenderController.collisions.get(touchInd).prevTouchTime) < 1000) {
                         RenderController.collisions.get(touchInd).doubleTouched();
                         RenderController.collisions.get(touchInd).updateTime();
@@ -198,11 +179,12 @@ public class MyCameraInputController extends GestureDetector {
 
         @Override
         public boolean zoom(float initialDistance, float distance) {
-            float newZoom = distance - initialDistance;
-            float amount = newZoom - previousZoom;
-            previousZoom = newZoom;
-            float w = Gdx.graphics.getWidth(), h = Gdx.graphics.getHeight();
-            return controller.pinchZoom(amount / ((w > h) ? h : w));
+//            float newZoom = distance - initialDistance;
+//            float amount = newZoom - previousZoom;
+//            previousZoom = newZoom;
+//            float w = Gdx.graphics.getWidth(), h = Gdx.graphics.getHeight();
+//            return controller.pinchZoom(amount / ((w > h) ? h : w));
+            return false;
         }
 
         @Override
@@ -225,20 +207,20 @@ public class MyCameraInputController extends GestureDetector {
     }
 
     public void update() {
-        if (rotateRightPressed || rotateLeftPressed || forwardPressed || backwardPressed) {
-            final float delta = Gdx.graphics.getDeltaTime();
-            if (rotateRightPressed) camera.rotate(camera.up, -delta * rotateAngle);
-            if (rotateLeftPressed) camera.rotate(camera.up, delta * rotateAngle);
-            if (forwardPressed) {
-                camera.translate(tmpV1.set(camera.direction).scl(delta * translateUnits));
-                if (forwardTarget) target.add(tmpV1);
-            }
-            if (backwardPressed) {
-                camera.translate(tmpV1.set(camera.direction).scl(-delta * translateUnits));
-                if (forwardTarget) target.add(tmpV1);
-            }
-            if (autoUpdate) camera.update();
-        }
+//        if (rotateRightPressed || rotateLeftPressed || forwardPressed || backwardPressed) {
+//            final float delta = Gdx.graphics.getDeltaTime();
+//            if (rotateRightPressed) camera.rotate(camera.up, -delta * rotateAngle);
+//            if (rotateLeftPressed) camera.rotate(camera.up, delta * rotateAngle);
+//            if (forwardPressed) {
+//                camera.translate(tmpV1.set(camera.direction).scl(delta * translateUnits));
+//                if (forwardTarget) target.add(tmpV1);
+//            }
+//            if (backwardPressed) {
+//                camera.translate(tmpV1.set(camera.direction).scl(-delta * translateUnits));
+//                if (forwardTarget) target.add(tmpV1);
+//            }
+//            if (autoUpdate) camera.update();
+//        }
     }
 
     private int touched;
@@ -280,31 +262,33 @@ public class MyCameraInputController extends GestureDetector {
     }
 
     public boolean process(float deltaX, float deltaY, int button) {
-        if (button == rotateButton) {
-            tmpV1.set(camera.direction).crs(camera.up).y = 0f;
-            camera.rotateAround(target, tmpV1.nor(), deltaY * rotateAngle);
-            camera.rotateAround(target, Vector3.Y, deltaX * -rotateAngle);
-        } else if (button == translateButton) {
-            camera.translate(tmpV1.set(camera.direction).crs(camera.up).nor().scl(-deltaX * translateUnits));
-            camera.translate(tmpV2.set(camera.up).scl(-deltaY * translateUnits));
-            if (translateTarget) target.add(tmpV1).add(tmpV2);
-        } else if (button == forwardButton) {
-            camera.translate(tmpV1.set(camera.direction).scl(deltaY * translateUnits));
-            if (forwardTarget) target.add(tmpV1);
-        }
-        if (autoUpdate) camera.update();
-        return true;
+//        if (button == rotateButton) {
+//            tmpV1.set(camera.direction).crs(camera.up).y = 0f;
+//            camera.rotateAround(target, tmpV1.nor(), deltaY * rotateAngle);
+//            camera.rotateAround(target, Vector3.Y, deltaX * -rotateAngle);
+//        } else if (button == translateButton) {
+//            camera.translate(tmpV1.set(camera.direction).crs(camera.up).nor().scl(-deltaX * translateUnits));
+//            camera.translate(tmpV2.set(camera.up).scl(-deltaY * translateUnits));
+//            if (translateTarget) target.add(tmpV1).add(tmpV2);
+//        } else if (button == forwardButton) {
+//            camera.translate(tmpV1.set(camera.direction).scl(deltaY * translateUnits));
+//            if (forwardTarget) target.add(tmpV1);
+//        }
+//        if (autoUpdate) camera.update();
+//        return true;
+        return false;
     }
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
-        boolean result = super.touchDragged(screenX, screenY, pointer);
-        if (result || this.button < 0) return result;
-        final float deltaX = (screenX - startX) / Gdx.graphics.getWidth();
-        final float deltaY = (startY - screenY) / Gdx.graphics.getHeight();
-        startX = screenX;
-        startY = screenY;
-        return process(deltaX, deltaY, button);
+//        boolean result = super.touchDragged(screenX, screenY, pointer);
+//        if (result || this.button < 0) return result;
+//        final float deltaX = (screenX - startX) / Gdx.graphics.getWidth();
+//        final float deltaY = (startY - screenY) / Gdx.graphics.getHeight();
+//        startX = screenX;
+//        startY = screenY;
+//        return process(deltaX, deltaY, button);
+        return false;
     }
 
     @Override

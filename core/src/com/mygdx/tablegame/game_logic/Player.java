@@ -3,14 +3,20 @@ package com.mygdx.tablegame.game_logic;
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.TimeUtils;
+import com.mygdx.tablegame.tools.Animation;
+import com.mygdx.tablegame.tools.CameraAnimation;
 import com.mygdx.tablegame.tools.ElementUI;
 import com.mygdx.tablegame.tools.MyCameraInputController;
 import com.mygdx.tablegame.cards.Card;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.TimerTask;
 // класс игрока, возможно придется создавать отдельный класс игрока под сетевую игру, в связи с возникающими противоречиями
 
 public class Player {
@@ -33,47 +39,59 @@ public class Player {
     public ArrayList<Card> on_table_cards; // разыгранные карты(не используется? уточнить правила)
     public Vector3 trash_pos;
     public Vector3 played_card_pos;
+    public Vector3 hand_pos;
+    public Vector3 shop_pos;
+    public Vector3 camera_on_played_card_pos;
+    public Vector3 camera_on_hand_pos;
+    public Vector3 camera_on_shop_pos;
+    public Vector3 camera_on_player1_played_cards_pos;
+    public Vector3 player1_played_cards_pos;
+    public Vector3 camera_on_player2_played_cards_pos;
+    public Vector3 player2_played_cards_pos;
+    public Vector3 camera_on_player3_played_cards_pos;
+    public Vector3 player3_played_cards_pos;
     public String name; // имя игрока
-    private int card_rot_modifier; // модификатор поворота карт, необходимо, т.к. при анимации поворот идет вокруг локальных осей карты
+    public ArrayList<CameraAnimation> cameraAnimations = new ArrayList<>();
+    public HashMap<Integer, Vector3[]> camera_positions_for_animation = new HashMap<>();
+    public Integer current_camera_pos_id = 0;
+    public Integer max_camera_animation_positions = 3;
+    private Vector3 standart_card_world_rotation; // модификатор поворота карт, необходимо, т.к. при анимации поворот идет вокруг локальных осей карты
+    public static int num_tmp = 0;
 
-
-
-    public Player(Vector3 pos, int num) {
+    public Player(int num) {
         Gdx.app.setLogLevel(Application.LOG_ERROR);// для логирования ошибок
         player_number = num;
         camera = new PerspectiveCamera(90, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         // дальность обзора камеры
-        camera.near = 1;
-        camera.far = 2000;
-        camera.position.set(pos);
-        camera.lookAt(0, 0, 0);
-        inputController = new MyCameraInputController(camera);
-        camera.update();// важно, при отсутсвии к камере не применятся изменения
-        System.out.println(camera.direction);
+        camera.near = 0.05f;
+        camera.far = 5000;
         health = 20;
         power_points = 0;
         win_points = 0;
-        normal_hand_size = 5;
+        normal_hand_size = 1;
         hand_size = normal_hand_size;
         deck_pos = new Vector3();
         trash_pos = new Vector3();
         played_card_pos = new Vector3();
+        shop_pos = Server.market_deck_pos;
         deck = new ArrayList<>();
         hand = new ArrayList<>();
         trash = new ArrayList<>();
         on_table_cards = new ArrayList<>();
+        inputController = new MyCameraInputController(camera);
         health_bar = new ElementUI[health / 2];
         armor_bar = new ElementUI[10];
         //задание позиций элементам экранного интерфейса
         for (int i = 0; i < health_bar.length; i++) {
-            health_bar[i] = new ElementUI(0);
+            health_bar[i] = new ElementUI(0, new BitmapFont());
             health_bar[i].sprite.setPosition(30 + health_bar[i].sprite.getWidth() * i, 50 + health_bar[i].sprite.getHeight() * player_number + 45 * player_number);
         }
         for (int i = 0; i < health_bar.length; i++) {
-            armor_bar[i] = new ElementUI(1);
+            armor_bar[i] = new ElementUI(1, new BitmapFont());
             armor_bar[i].change_texture(-1);
             armor_bar[i].sprite.setPosition(health_bar[0].sprite.getWidth() * health_bar.length + 30 + armor_bar[i].sprite.getHeight() * i, 50 + armor_bar[i].sprite.getHeight() * player_number + 45 * player_number);
         }
+        // важно, при отсутсвии к камере не применятся изменения
     }
 
     public Integer getHealth() {
@@ -92,57 +110,110 @@ public class Player {
         return armor;
     }
 
-    public int getCard_rot_modifier() {
-        return card_rot_modifier;
+    public Vector3 getStandart_card_world_rotation() {
+        return standart_card_world_rotation;
+    }
+
+    public Vector3[] getNext_camera_pos() {
+        current_camera_pos_id += 1;
+        return camera_positions_for_animation.get(current_camera_pos_id % max_camera_animation_positions);
+    }
+
+    public Vector3[] getPrev_camera_pos() {
+        current_camera_pos_id -= 1;
+        return camera_positions_for_animation.get(Math.abs(current_camera_pos_id) % max_camera_animation_positions);
+    }
+
+    public Vector3[] getCurrent_camera_pos() {
+        return camera_positions_for_animation.get(Math.abs(current_camera_pos_id) % max_camera_animation_positions);
     }
 
     public void setPower_points(Integer power_points) {
-        // не может быть отрицательным, иначе может вызвать софлок
-        if(power_points>=0)
+        // не может быть отрицательным, иначе может вызвать софтлок
+        if (power_points >= 0)
             this.power_points = power_points;
-        else Gdx.app.log(GameController.log_tag,"Player.power_points must be >=0");
+        else Gdx.app.log(GameController.log_tag, "Player.power_points must be >=0");
     }
 
     public void setHand_size(Integer hand_size) {
-        if(hand_size>=0) this.hand_size = hand_size;
-        else Gdx.app.log(GameController.log_tag,"Player.hand_size must be >=0");
+        if (hand_size >= 0) this.hand_size = hand_size;
+        else Gdx.app.log(GameController.log_tag, "Player.hand_size must be >=0");
     }
 
-    public void setCard_rot_modifier(int card_rot_modifier) {
-        this.card_rot_modifier = card_rot_modifier%360;
+    public void setStandart_card_world_rotation(Vector3 standart_card_world_rotation) {
+        this.standart_card_world_rotation = standart_card_world_rotation;
     }
 
+    public void updateCameraAnimations() {
+        if (!cameraAnimations.isEmpty()) {
+
+            CameraAnimation cameraAnimation = cameraAnimations.get(0);
+            if (cameraAnimation.start_time == -1) {
+                cameraAnimation.startAnimation();
+            }
+            if (cameraAnimation.duration < TimeUtils.timeSinceMillis(cameraAnimation.start_time)) {
+                cameraAnimations.remove(0);
+                return;
+            } else {
+                cameraAnimation.updateState();
+            }
+        }
+    }
 
     public void player_init() {
-        Gdx.input.setInputProcessor(inputController);
+        camera_positions_for_animation.put(0, new Vector3[]{camera_on_hand_pos.cpy(), hand_pos.cpy()});
+        camera_positions_for_animation.put(1, new Vector3[]{camera_on_shop_pos.cpy(), shop_pos.cpy()});
+        camera_positions_for_animation.put(2, new Vector3[]{camera_on_played_card_pos.cpy(), played_card_pos.cpy()});
+        if (camera_on_player1_played_cards_pos != null) {
+            camera_positions_for_animation.put(4, new Vector3[]{camera_on_player1_played_cards_pos.cpy(), player1_played_cards_pos});
+        }
+        if (camera_on_player2_played_cards_pos != null) {
+            camera_positions_for_animation.put(5, new Vector3[]{camera_on_player2_played_cards_pos.cpy(), player2_played_cards_pos});
+        }
+        if (camera_on_player3_played_cards_pos != null) {
+            camera_positions_for_animation.put(6, new Vector3[]{camera_on_player3_played_cards_pos.cpy(), player3_played_cards_pos});
+        }
+        current_camera_pos_id = 0;
+        camera.position.set(camera_on_hand_pos);
+        camera.lookAt(hand_pos);
+        camera.update();
     }
 
-//    public void getHand() {
-//        // получение карт в руку
-//        hand.clear();// не должно возникать случаев использования, но пусть будет как мера безопасности
-//        deck.trimToSize();
-//        if (deck.size() < hand_size) {
-//            Collections.shuffle(trash);
-//            deck.addAll(trash);
-//            trash.clear();
-//        }
-//        for (int i = 0; i < hand_size; i++) {
-//            hand.add(deck.get(i));
-//            if (!CanTouch.renderable_3d.contains(deck.get(i)))
-//                CanTouch.renderable_3d.add(deck.get(i));// добавление карт в список отрисовываемых 3д объектов
-//        }
-//        for (int i = 0; i < hand_size; i++) {
-//            deck.remove(0);
-//        }
-//        for (int i = 0; i < hand_size; i++) {
-//            hand.get(i).calculate_inHand_pos(hand_size, i, false);
-//            hand.get(i).animations2D.clear();//не должно возникать случаев использования,но пусть будет как мера безопасности
-//            hand.get(i).convertTo2D(camera.position);// перевод карт в состояние 2д,после создания нормальных анимаций камеры удалить
-//            hand.get(i).animations2D.add(hand.get(i).doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(hand.get(i).getInHandX(), hand.get(i).getInHandY()), 20, hand.get(i).getInHand_rotation() - hand.get(i).sprite.getRotation(), "laying_out_card"));// перовод карт в позиции руки
-//        }
-//    }
+    public void getHand() {
+        // получение карт в руку
+        hand.clear();// не должно возникать случаев использования, но пусть будет как мера безопасности
+        deck.trimToSize();
+        if (deck.size() < hand_size) {
+            Collections.shuffle(trash);
+            deck.addAll(trash);
+            trash.clear();
+        }
+        for (int i = 0; i < hand_size; i++) {
+            hand.add(deck.get(i));
+            if (!RenderController.renderable_3d.contains(deck.get(i)))
+                RenderController.renderable_3d.add(deck.get(i));// добавление карт в список отрисовываемых 3д объектов
+        }
+        for (int i = 0; i < hand_size; i++) {
+            deck.remove(0);
+        }
+        num_tmp = 0;
+        for (int i = 0; i < hand_size; i++) {
+            final int k = i;
 
-//    public void getCard() {
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    Card card = hand.get(k);
+                    card.moveToHandLocation();
+                    Vector3 tmp = card.calculateInHandPos(k, hand_size, hand_pos);
+                    card.animations3D.add(new Animation(card.getModelInstance(), tmp, 500, Interpolation.linear, "to hand pos"));
+                }
+            };
+            GameController.timer.schedule(timerTask, 500 * (i + 1));
+        }
+    }
+
+    //    public void getCard() {
 //        // получение одной карты
 //        if (deck.isEmpty()) {
 //            deck.addAll(trash);
@@ -161,16 +232,19 @@ public class Player {
 //        }
 //        card.animations2D.add(card.doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(card.getInHandX(), card.getInHandY()), 20, card.getInHand_rotation() - card.sprite.getRotation(), "laying_out_card"));
 //    }
-
-//    public void refresh_hands_positions() {
-//        //вычисление актуальных позиций карт в руке
-//        for (int i = 0; i < hand.size(); i++) {
-//            hand.trimToSize();
-//            Card card = hand.get(i);
-//            card.calculate_inHand_pos(hand.size(), i, false);
-//            card.animations2D.add(card.doAnimation2D(new Vector2(card.sprite.getX(), card.sprite.getY()), new Vector2(card.getInHandX(), card.getInHandY()), 10, card.getInHand_rotation() - card.sprite.getRotation(), "relocate_after_discard"));
-//        }
-//    }
+//
+    public void refresh_hands_positions() {
+        //вычисление актуальных позиций карт в руке
+        if (hand.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < hand.size(); i++) {
+            hand.trimToSize();
+            Card card = hand.get(i);
+            Vector3 tmp = card.calculateInHandPos(i, hand.size(), hand_pos);
+            card.animations3D.add(new Animation(card.getModelInstance(), tmp, 2000, Interpolation.circle, "refresh hand pos"));
+        }
+    }
 
     public void refresh_health(int delta) {
         //обновление экранного отображения здоровья после его обновления

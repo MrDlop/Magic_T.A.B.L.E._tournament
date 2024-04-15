@@ -13,10 +13,10 @@ import jdk.internal.event.Event;
 
 // класс, содержащий всю информацию об анимации 3д представления карты
 public class Animation {
-    public ModelInstance modelInstance;
+    public MyModelInstance modelInstance;
     public long start_time;//время начала анимации
-    public Vector3 startPos;//начальное положение
-    public Vector3 endPos;//конечное положение
+    public Vector3 startPos = new Vector3();//начальное положение
+    public Vector3 endPos = new Vector3();//конечное положение
     public float duration;//продолжительность
     //смещение по каждой из осей
     public float distanceX;
@@ -28,22 +28,23 @@ public class Animation {
     public float delta_angleX;
     public float delta_angleY;
     public float delta_angleZ;
-    //текущие углы поворота
-    public float prevRotX = 0;
-    public float prevRotY = 0;
-    public float prevRotZ = 0;
-    public Interpolation move_interpolation_type=Interpolation.linear;
-    public Interpolation rotation_interpolation_type=Interpolation.linear;
+    public Interpolation move_interpolation_type = Interpolation.linear;
+    public Interpolation rotation_interpolation_type = Interpolation.linear;
     public float prevUpdateTime = -1;
     public boolean is3D;
+    public boolean delayed_call;
     public String id;
-    private  float progress=0;
-    private Matrix3 anim_matrix = new Matrix3();
+    private float progress = 0;
     private Quaternion quaternion = new Quaternion();
+    private Quaternion quaternionX = new Quaternion();
+    private Quaternion quaternionY = new Quaternion();
+    private Quaternion quaternionZ = new Quaternion();
 
 
-    public Animation(Vector3 start, Vector3 end, float millis_time,Interpolation move_interpolation,Interpolation rotation_interpolation, String id) {
+    public Animation(MyModelInstance instance, Vector3 start, Vector3 end, float millis_time, Interpolation move_interpolation, String id) {
         is3D = true;
+        delayed_call = false;
+        modelInstance = instance;
         start_time = -1;
         startPos = start;
         endPos = end;
@@ -52,12 +53,13 @@ public class Animation {
         distanceY = endPos.y - startPos.y;
         distanceZ = endPos.z - startPos.z;
         this.id = id;
-        move_interpolation_type=move_interpolation;
-        rotation_interpolation_type=rotation_interpolation;
+        move_interpolation_type = move_interpolation;
     }
 
-    public Animation(Vector3 start, Vector3 end, float millis_time, Vector3 startR_angles, Vector3 endR_angles,Interpolation move_interpolation,Interpolation rotation_interpolation, String id) {
+    public Animation(MyModelInstance instance, Vector3 start, Vector3 end, float millis_time, final Vector3 startR_angles, final Vector3 endR_angles, Interpolation move_interpolation, Interpolation rotation_interpolation, String id) {
         is3D = true;
+        delayed_call = false;
+        modelInstance = instance;
         start_time = -1;
         startPos = start;
         endPos = end;
@@ -71,40 +73,83 @@ public class Animation {
         distanceY = endPos.y - startPos.y;
         distanceZ = endPos.z - startPos.z;
         this.id = id;
-        move_interpolation_type=move_interpolation;
-        rotation_interpolation_type=rotation_interpolation;
+        move_interpolation_type = move_interpolation;
+        rotation_interpolation_type = rotation_interpolation;
     }
 
-    public Animation() {
+    public Animation(MyModelInstance instance, Vector3 end, float millis_time, final Vector3 endR_angles, Interpolation move_interpolation, Interpolation rotation_interpolation, String id) {
+        is3D = true;
+        delayed_call = true;
+        modelInstance = instance;
+        start_time = -1;
+        endPos = end;
+        duration = millis_time;
+        end_rotation_angles = endR_angles;
+        this.id = id;
+        move_interpolation_type = move_interpolation;
+        rotation_interpolation_type = rotation_interpolation;
+    }
+
+    public Animation(MyModelInstance instance, Vector3 end, float millis_time, Interpolation move_interpolation, String id) {
+        is3D = true;
+        delayed_call = true;
+        modelInstance = instance;
+        start_time = -1;
+        endPos = end;
+        duration = millis_time;
+        this.id = id;
+        move_interpolation_type = move_interpolation;
+    }
+
+    public void startAnimation() {
+        if (delayed_call) {
+            if (end_rotation_angles == null) {
+                modelInstance.transform.getTranslation(startPos);
+                distanceX = endPos.x - startPos.x;
+                distanceY = endPos.y - startPos.y;
+                distanceZ = endPos.z - startPos.z;
+            } else {
+                modelInstance.transform.getTranslation(startPos);
+                start_rotation_angles = modelInstance.global_rotations.cpy();
+                delta_angleX = end_rotation_angles.x - start_rotation_angles.x;
+                delta_angleY = end_rotation_angles.y - start_rotation_angles.y;
+                delta_angleZ = end_rotation_angles.z - start_rotation_angles.z;
+                distanceX = endPos.x - startPos.x;
+                distanceY = endPos.y - startPos.y;
+                distanceZ = endPos.z - startPos.z;
+            }
+        }
+        start_time = TimeUtils.millis();
     }
 
     public void update() {
         float delta_time = TimeUtils.timeSinceMillis(start_time) / duration;
-        float XrotAng = start_rotation_angles.x + delta_angleX * rotation_interpolation_type.apply(delta_time)- prevRotX;
-        prevRotX += XrotAng;
-        float YrotAng = start_rotation_angles.y + delta_angleY * rotation_interpolation_type.apply(delta_time) - prevRotY;
-        prevRotY += YrotAng;
-        float ZrotAng = start_rotation_angles.z + delta_angleZ * rotation_interpolation_type.apply(delta_time) - prevRotZ;
-        prevRotZ += ZrotAng;
-        anim_matrix.set(new float[]{
-                MathUtils.cosDeg(YrotAng) * MathUtils.cosDeg(ZrotAng),
-                MathUtils.sinDeg(XrotAng) * MathUtils.sinDeg(YrotAng) * MathUtils.cosDeg(ZrotAng) + MathUtils.sinDeg(ZrotAng) * MathUtils.cosDeg(XrotAng),
-                MathUtils.sinDeg(XrotAng) * MathUtils.sinDeg(ZrotAng) - MathUtils.sinDeg(YrotAng) * MathUtils.cosDeg(XrotAng) * MathUtils.cosDeg(ZrotAng),
-                -1 * MathUtils.sinDeg(ZrotAng) * MathUtils.cosDeg(YrotAng),
-                -1 * MathUtils.sinDeg(XrotAng) * MathUtils.sinDeg(YrotAng) * MathUtils.sinDeg(ZrotAng) + MathUtils.cosDeg(XrotAng) * MathUtils.cosDeg(ZrotAng),
-                MathUtils.sinDeg(XrotAng) * MathUtils.cosDeg(ZrotAng) + MathUtils.sinDeg(YrotAng) * MathUtils.sinDeg(ZrotAng) * MathUtils.cosDeg(XrotAng),
-                MathUtils.sinDeg(YrotAng),
-                -1 * MathUtils.sinDeg(XrotAng) * MathUtils.cosDeg(YrotAng),
-                MathUtils.cosDeg(XrotAng) * MathUtils.cosDeg(YrotAng)
-        });
-        quaternion.setFromMatrix(anim_matrix);
-        modelInstance.transform.rotate(quaternion);
-        modelInstance.transform.setTranslation(new Vector3(startPos.x+distanceX*move_interpolation_type.apply(delta_time),startPos.y+distanceY*move_interpolation_type.apply(delta_time),startPos.z+distanceZ*move_interpolation_type.apply(delta_time)));
+        if (start_rotation_angles != null && end_rotation_angles != null) {
+            float XrotAng = start_rotation_angles.x + delta_angleX * rotation_interpolation_type.apply(delta_time);
+            float YrotAng = start_rotation_angles.y + delta_angleY * rotation_interpolation_type.apply(delta_time);
+            float ZrotAng = start_rotation_angles.z + delta_angleZ * rotation_interpolation_type.apply(delta_time);
+            modelInstance.setToWorldRotation(new Vector3(XrotAng,YrotAng,ZrotAng));
+        }
+        modelInstance.transform.setTranslation(new Vector3(startPos.x + distanceX * move_interpolation_type.apply(delta_time), startPos.y + distanceY * move_interpolation_type.apply(delta_time), startPos.z + distanceZ * move_interpolation_type.apply(delta_time)));
     }
-    public  void freezeAnimation(){
-        progress=TimeUtils.timeSinceMillis(start_time)/duration;
+
+    public void lastUpdate() {
+        float delta_time = 1;
+        if (start_rotation_angles != null && end_rotation_angles != null) {
+            float XrotAng = start_rotation_angles.x + delta_angleX * rotation_interpolation_type.apply(delta_time);
+            float YrotAng = start_rotation_angles.y + delta_angleY * rotation_interpolation_type.apply(delta_time);
+            float ZrotAng = start_rotation_angles.z + delta_angleZ * rotation_interpolation_type.apply(delta_time);
+            modelInstance.setToWorldRotation(XrotAng, YrotAng, ZrotAng);
+        }
+        modelInstance.transform.setTranslation(new Vector3(startPos.x + distanceX * move_interpolation_type.apply(delta_time), startPos.y + distanceY * move_interpolation_type.apply(delta_time), startPos.z + distanceZ * move_interpolation_type.apply(delta_time)));
     }
-    public void unfreezeAnimation(){
-        start_time= (long) (TimeUtils.millis()-(duration*progress));
+
+
+    public void freezeAnimation() {
+        progress = TimeUtils.timeSinceMillis(start_time) / duration;
+    }
+
+    public void unfreezeAnimation() {
+        start_time = (long) (TimeUtils.millis() - (duration * progress));
     }
 }
