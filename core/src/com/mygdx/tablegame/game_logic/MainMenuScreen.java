@@ -89,13 +89,7 @@ public class MainMenuScreen implements Screen {
         font1.setColor(Color.BLACK);
         generator.dispose();
 
-//        ObjectMap<String, Object> fontMap = new ObjectMap<String, Object>();
-//        fontMap.put("font1", font);
-//        fontMap.put("font2", font1);
-//        SkinLoader.SkinParameter skinParameter=new SkinLoader.SkinParameter("test.atlas",fontMap);
-//        assetManager.load("test.json",Skin.class,skinParameter);
-//        assetManager.finishLoading();
-//        skin=assetManager.get("test.json",Skin.class);
+
         skin = new Skin();
         atlas = new TextureAtlas(Gdx.files.internal("test.atlas"));
         skin.addRegions(atlas);
@@ -130,18 +124,20 @@ public class MainMenuScreen implements Screen {
             }
         });
         //в разработке #TODO разобраться с проблемой записи файлов на андроид для реализации запоминания настроек
-        settings_button = new TextButton("Настройки", skin);
+        settings_button = new TextButton("Выйти", skin);
         settings_button.setSize(600, 300);
         settings_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                Server.players_count+=3;
-                names.add("biba");
-                names.add("boba");
-                names.add("aboba");
-                GameController.constants.current_preset=GameController.constants.preset_4_players;
-                Server.server_init(names);
-                game.setScreen(new GameScreen());
-                GameController.state = GameState.CHANGE_PLAYER;
+//                Server.players_count=4;
+//                names.add("biba");
+//                names.add("boba");
+//                names.add("aboba");
+//                names.add("amogus");
+//                GameController.constants.current_preset=GameController.constants.preset_4_players;
+//                Server.server_init(names);
+//                game.setScreen(new GameScreen());
+//                GameController.state = GameState.CHANGE_PLAYER;
+
             }
         });
         verticalGroup.setSize(600, 500);
@@ -151,11 +147,11 @@ public class MainMenuScreen implements Screen {
         verticalGroup.addActor(single_start_button);
         verticalGroup.addActor(online_start_button);
         verticalGroup.addActor(rules_button);
-        verticalGroup.addActor(settings_button);
-        add_player_button = new TextButton("add player", skin);
-        begin_game_button = new TextButton("start game", skin);
-        go_back_button1=new TextButton("back",skin);
-        enter_players_name = new TextField("enter player`s name", skin);
+        //verticalGroup.addActor(settings_button);
+        add_player_button = new TextButton("добавить игрока", skin);
+        begin_game_button = new TextButton("начать игру", skin);
+        go_back_button1=new TextButton("назад",skin);
+        enter_players_name = new TextField("введите имя игрока", skin);
         enter_players_name.setSize(800, 150);
         enter_players_name.setPosition(Gdx.graphics.getWidth() / 2f-enter_players_name.getWidth()/2f, Gdx.graphics.getHeight() * 0.67f);
         enter_players_name.getStyle().font.getData().setScale(4);
@@ -166,10 +162,11 @@ public class MainMenuScreen implements Screen {
         });
 //        enter_players_name.clearListeners();
         add_player_button.setSize(500, 200);
+        add_player_button.getLabel().setFontScale(0.8f);
         add_player_button.setPosition(Gdx.graphics.getWidth() * 0.67f, Gdx.graphics.getHeight() / 6);
         add_player_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-               if (!enter_players_name.getText().equals("") && Server.players_count < 5 && !enter_players_name.getText().equals("enter player`s name")) {
+               if (!enter_players_name.getText().equals("") && Server.players_count < 5 && !enter_players_name.getText().equals("введите имя игрока")) {
                     Server.players_count++;
                     names.add(enter_players_name.getText());// получение и запись имени игрока
                     enter_players_name.setText("");
@@ -211,16 +208,16 @@ public class MainMenuScreen implements Screen {
         players_create_stage.addActor(begin_game_button);
         players_create_stage.addActor(go_back_button1);
         //находится в разработке(сетевая игра)
-        go_back_button2=new TextButton("back",skin);
+        go_back_button2=new TextButton("назад",skin);
         go_back_button2.setSize(250,100);
-        go_back_button2.getLabel().setFontScale(4);
+        go_back_button2.getLabel().setFontScale(1);
         go_back_button2.setPosition(0,Gdx.graphics.getHeight()-go_back_button1.getHeight());
         go_back_button2.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y) {
                 GameController.state=GameState.START;
             }
         });
-        enter_session_name = new TextField("enter session name", skin);
+        enter_session_name = new TextField("введите имя комнаты", skin);
         enter_session_name.setSize(800, 150);
         enter_session_name.setPosition(Gdx.graphics.getWidth() / 2f - enter_session_name.getWidth()*0.56f, Gdx.graphics.getHeight() * 0.8f);
         enter_session_name.getStyle().font.getData().setScale(4);
@@ -229,8 +226,9 @@ public class MainMenuScreen implements Screen {
                 enter_session_name.setText("");
             }
         });
-        create_session_button = new TextButton("create session", skin);
+        create_session_button = new TextButton("создать комнату", skin);
         create_session_button.setSize(600, 250);
+        create_session_button.getLabel().setFontScale(0.9f);
         create_session_button.setPosition(Gdx.graphics.getWidth() / 2.2f - create_session_button.getWidth() / 2, Gdx.graphics.getHeight() / 2 - create_session_button.getHeight() / 2);
         create_session_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -247,8 +245,9 @@ public class MainMenuScreen implements Screen {
 //                }
             }
         });
-        join_session_button = new TextButton("join session", skin);
+        join_session_button = new TextButton("присоединиться к комнате", skin);
         join_session_button.setSize(600, 250);
+        join_session_button.getLabel().setFontScale(0.55f);
         join_session_button.setPosition(Gdx.graphics.getWidth() / 2.2f - join_session_button.getWidth() / 2, Gdx.graphics.getHeight() / 2 - join_session_button.getHeight() * 1.5f);
         join_session_button.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
@@ -265,7 +264,7 @@ public class MainMenuScreen implements Screen {
 //                }
             }
         });
-        begin_online_game_button = new TextButton("start game", skin);
+        begin_online_game_button = new TextButton("начать игру", skin);
         begin_online_game_button.setSize(600, 250);
 //        begin_game_button.setPosition(Gdx.graphics.getWidth() * 0.67f, Gdx.graphics.getHeight() / 6f);
 //        begin_game_button.setVisible(true);

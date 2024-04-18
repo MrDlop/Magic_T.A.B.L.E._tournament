@@ -1,5 +1,6 @@
 package com.mygdx.tablegame.game_logic;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
 import com.mygdx.tablegame.tools.AssetStorage;
 

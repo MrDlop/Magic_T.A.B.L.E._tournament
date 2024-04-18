@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.TimerTask;
 // класс игрока, возможно придется создавать отдельный класс игрока под сетевую игру, в связи с возникающими противоречиями
 
-public class Player {
+public class Player implements EventReceiver {
     public final Integer player_number;// порядковый номер, используется для идентификации
     public PerspectiveCamera camera;// камера, у каждого игрока своя
     public MyCameraInputController inputController; // может быть разным, в зависимости от настроек(в разработке)
@@ -56,7 +56,9 @@ public class Player {
     public Integer current_camera_pos_id = 0;
     public Integer max_camera_animation_positions = 3;
     private Vector3 standart_card_world_rotation; // модификатор поворота карт, необходимо, т.к. при анимации поворот идет вокруг локальных осей карты
-    public static int num_tmp = 0;
+    public int rot_modifier;
+    public String main_axis;
+    public boolean inited=false;
 
     public Player(int num) {
         Gdx.app.setLogLevel(Application.LOG_ERROR);// для логирования ошибок
@@ -68,7 +70,7 @@ public class Player {
         health = 20;
         power_points = 0;
         win_points = 0;
-        normal_hand_size = 1;
+        normal_hand_size = 5;
         hand_size = normal_hand_size;
         deck_pos = new Vector3();
         trash_pos = new Vector3();
@@ -79,6 +81,7 @@ public class Player {
         trash = new ArrayList<>();
         on_table_cards = new ArrayList<>();
         inputController = new MyCameraInputController(camera);
+        inputController.target=new Vector3(0,0,0);
         health_bar = new ElementUI[health / 2];
         armor_bar = new ElementUI[10];
         //задание позиций элементам экранного интерфейса
@@ -91,6 +94,7 @@ public class Player {
             armor_bar[i].change_texture(-1);
             armor_bar[i].sprite.setPosition(health_bar[0].sprite.getWidth() * health_bar.length + 30 + armor_bar[i].sprite.getHeight() * i, 50 + armor_bar[i].sprite.getHeight() * player_number + 45 * player_number);
         }
+
         // важно, при отсутсвии к камере не применятся изменения
     }
 
@@ -161,6 +165,7 @@ public class Player {
     }
 
     public void player_init() {
+        inited=true;
         camera_positions_for_animation.put(0, new Vector3[]{camera_on_hand_pos.cpy(), hand_pos.cpy()});
         camera_positions_for_animation.put(1, new Vector3[]{camera_on_shop_pos.cpy(), shop_pos.cpy()});
         camera_positions_for_animation.put(2, new Vector3[]{camera_on_played_card_pos.cpy(), played_card_pos.cpy()});
@@ -177,6 +182,19 @@ public class Player {
         camera.position.set(camera_on_hand_pos);
         camera.lookAt(hand_pos);
         camera.update();
+        if (player_number == 0 || player_number == 2) {
+            rot_modifier = 1;
+        } else {
+            rot_modifier = -1;
+        }
+        GlobalEvents.turnCompliteIntentEventSigners.add(this);
+        GlobalEvents.turnComplitedEventSigners.add(this);
+        GlobalEvents.turnStartedEventSigners.add(this);
+        GlobalEvents.gameStartedEventSigners.add(this);
+        GlobalEvents.gameEndedEventSigners.add(this);
+        for (Card card : deck) {
+            card.main_axis = main_axis;
+        }
     }
 
     public void getHand() {
@@ -190,49 +208,47 @@ public class Player {
         }
         for (int i = 0; i < hand_size; i++) {
             hand.add(deck.get(i));
-            if (!RenderController.renderable_3d.contains(deck.get(i)))
-                RenderController.renderable_3d.add(deck.get(i));// добавление карт в список отрисовываемых 3д объектов
         }
         for (int i = 0; i < hand_size; i++) {
             deck.remove(0);
         }
-        num_tmp = 0;
         for (int i = 0; i < hand_size; i++) {
             final int k = i;
-
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     Card card = hand.get(k);
                     card.moveToHandLocation();
                     Vector3 tmp = card.calculateInHandPos(k, hand_size, hand_pos);
-                    card.animations3D.add(new Animation(card.getModelInstance(), tmp, 500, Interpolation.linear, "to hand pos"));
+                    card.animations3D.add(new Animation(card.getModelInstance(), tmp, 300, Interpolation.linear, "to hand pos"));
                 }
             };
-            GameController.timer.schedule(timerTask, 500 * (i + 1));
+            GameController.timer.schedule(timerTask, 300L * (i + 1));
         }
     }
+    public Card getCard(){
+        if(deck.isEmpty()){
+            Collections.shuffle(trash);
+            deck.addAll(trash);
+            trash.clear();
+        }
+        Card card=deck.get(0);
+        deck.remove(0);
+        return card;
+    }
+    public void getCardToHand(){
+        if(deck.isEmpty()){
+            Collections.shuffle(trash);
+            deck.addAll(trash);
+            trash.clear();
+        }
+        Card card=deck.get(0);
+        deck.remove(0);
+        hand.add(card);
+        card.moveToHandLocation();
+        refresh_hands_positions();
+    }
 
-    //    public void getCard() {
-//        // получение одной карты
-//        if (deck.isEmpty()) {
-//            deck.addAll(trash);
-//            Collections.shuffle(deck);
-//            trash.clear();
-//        }
-//        Card card = deck.get(0);
-//        deck.remove(0);
-//        card.setCardPos(deck_pos);
-//        CanTouch.renderable_3d.add(card);
-//        card.convertTo2D(camera.position);
-//        hand.add(card);
-//        for (int i = 0; i < hand_size; i++) {
-//            hand.get(i).calculate_inHand_pos(hand_size, i, false);
-//
-//        }
-//        card.animations2D.add(card.doAnimation2D(new Vector2(Gdx.graphics.getWidth() / 2f, 600), new Vector2(card.getInHandX(), card.getInHandY()), 20, card.getInHand_rotation() - card.sprite.getRotation(), "laying_out_card"));
-//    }
-//
     public void refresh_hands_positions() {
         //вычисление актуальных позиций карт в руке
         if (hand.isEmpty()) {
@@ -242,7 +258,7 @@ public class Player {
             hand.trimToSize();
             Card card = hand.get(i);
             Vector3 tmp = card.calculateInHandPos(i, hand.size(), hand_pos);
-            card.animations3D.add(new Animation(card.getModelInstance(), tmp, 2000, Interpolation.circle, "refresh hand pos"));
+            card.animations3D.add(new Animation(card.getModelInstance(), tmp, 1000, Interpolation.pow2InInverse, "refresh hand pos"));
         }
     }
 
@@ -313,6 +329,53 @@ public class Player {
             armor_bar[i].change_texture(1);//броня есть
         }
         armor += arm;
+    }
+
+    @Override
+    public void turnCompliteIntent() {
+        if (Server.player_now == this) {
+            for (int i = 0; i < hand.size(); i++) {
+                hand.get(i).moveToTrash();
+                trash.add(hand.get(i));
+            }
+            for (int i = 0; i < on_table_cards.size(); i++) {
+                on_table_cards.get(i).moveToTrash();
+                trash.add(on_table_cards.get(i));
+            }
+            on_table_cards.clear();
+            hand.clear();
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    Server.player_now.getHand();
+                }
+            };
+            GameController.timer.schedule(timerTask, 2500);
+        }
+    }
+
+    @Override
+    public void turnComplited() {
+
+    }
+
+    @Override
+    public void turnStarted() {
+        if (Server.player_now == this) {
+            for (Card c : hand) {
+                c.setVisible(true);
+            }
+        }
+    }
+
+    @Override
+    public void gameEnded() {
+
+    }
+
+    @Override
+    public void gameStarted() {
+
     }
 }
 

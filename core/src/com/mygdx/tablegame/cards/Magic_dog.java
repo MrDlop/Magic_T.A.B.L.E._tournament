@@ -14,6 +14,6 @@ public class Magic_dog extends Card {
     public void played() {
         //в некоторых случаях приводит к падению приложения #TODO исправить критическую ошибку!(условия возникновения неизвестны, проявлялась лишь на части тестовых устройств)
         Server.attack(Server.player_now,2);
-        //Server.player_now.getCard();// с большей вероятность приводит к ошибке
+        Server.player_now.getCardToHand();// с большей вероятность приводит к ошибке
     }
 }

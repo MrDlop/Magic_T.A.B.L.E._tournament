@@ -12,7 +12,7 @@ public class SpellBook extends Card {
 
     @Override
     public void played() {
-//        Server.player_now.getCard();
-//        Server.player_now.getCard();
+        Server.player_now.getCardToHand();
+        Server.player_now.getCardToHand();
     }
 }

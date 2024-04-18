@@ -18,6 +18,8 @@ public class Znak extends Card {
         Random random=new Random();
         if(random.nextInt(2)==1) Server.player_now.setPower_points(Server.player_now.getPower_points()+power_points);
         Server.player_now.setPower_points(Server.player_now.getPower_points()+power_points);
-        GameScreen.getPlayer_UI_names()[Server.player_now.player_number]=Server.player_now.name+"`s power points  : "+Server.player_now.getPower_points();
+        GameScreen.refreshPowerPoints();
     }
+
+
 }

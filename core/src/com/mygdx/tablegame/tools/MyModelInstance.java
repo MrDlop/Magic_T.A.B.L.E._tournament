@@ -20,6 +20,7 @@ public class MyModelInstance extends ModelInstance {
     public void setToWorldRotation(float x,float y,float z){
         setToWorldRotation(new Vector3(x,y,z));
     }
+
     public void setToWorldRotation(Vector3 euler_angles){
         float XrotAng = euler_angles.x;
         float YrotAng = euler_angles.y;
@@ -32,11 +33,30 @@ public class MyModelInstance extends ModelInstance {
         transform.getScale(scale);
         transform.getTranslation(translation);
         float[] tmp = new float[16];
-        quaternionX.mul(quaternionY);
-        quaternionY.mul(quaternionZ).toMatrix(tmp);
+        quaternionX.mul(quaternionY.mul(quaternionZ)).toMatrix(tmp);
         transform=transform.idt().mul(new Matrix4(tmp));
         transform.scale(scale.x, scale.y, scale.z);
         transform.setTranslation(translation);
         global_rotations=euler_angles.cpy();
-    }
+//        Vector3 translation=new Vector3();
+//        Vector3 scale=new Vector3();
+//        transform.getTranslation(translation);
+//        transform.getScale(scale);
+//        Matrix4 target=setMatrixFromAxis(
+//                forward.nor(),right.nor(),up.nor());
+//        transform=target.cpy();
+//        transform.scale(scale.x,scale.y,scale.z);
+//        transform.setTranslation(translation);
+//    }
+//    public static Vector3 getRightVector(Vector3 forwardVector)
+//    {
+//        return new Vector3(-forwardVector.z, 0, forwardVector.x);
+//    }
+//    static Matrix4 setMatrixFromAxis(Vector3 x,Vector3 y,Vector3 z){
+//        return new Matrix4(new float[]{
+//                x.x,y.x,z.x,0,
+//                x.y,y.y,z.y,0,
+//                x.z,y.z,z.z,0,
+//                0,0,0,1});
+   }
 }

@@ -130,6 +130,7 @@ public class Animation {
             float ZrotAng = start_rotation_angles.z + delta_angleZ * rotation_interpolation_type.apply(delta_time);
             modelInstance.setToWorldRotation(new Vector3(XrotAng,YrotAng,ZrotAng));
         }
+
         modelInstance.transform.setTranslation(new Vector3(startPos.x + distanceX * move_interpolation_type.apply(delta_time), startPos.y + distanceY * move_interpolation_type.apply(delta_time), startPos.z + distanceZ * move_interpolation_type.apply(delta_time)));
     }
 
@@ -139,7 +140,7 @@ public class Animation {
             float XrotAng = start_rotation_angles.x + delta_angleX * rotation_interpolation_type.apply(delta_time);
             float YrotAng = start_rotation_angles.y + delta_angleY * rotation_interpolation_type.apply(delta_time);
             float ZrotAng = start_rotation_angles.z + delta_angleZ * rotation_interpolation_type.apply(delta_time);
-            modelInstance.setToWorldRotation(XrotAng, YrotAng, ZrotAng);
+            modelInstance.setToWorldRotation(new Vector3(XrotAng, YrotAng, ZrotAng));
         }
         modelInstance.transform.setTranslation(new Vector3(startPos.x + distanceX * move_interpolation_type.apply(delta_time), startPos.y + distanceY * move_interpolation_type.apply(delta_time), startPos.z + distanceZ * move_interpolation_type.apply(delta_time)));
     }

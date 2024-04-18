@@ -17,7 +17,7 @@ public class SunFaced extends Card {
     @Override
     public void played() {
         Server.player_now.setPower_points(Server.player_now.getPower_points()+power_points);
-        GameScreen.getPlayer_UI_names()[Server.player_now.player_number]=Server.player_now.name+"`s power points  : "+Server.player_now.getPower_points();
+        GameScreen.refreshPowerPoints();
         //Server.player_now.getCard();
         ArrayList<Player> targets = new ArrayList<>();
         for (int i = 0; i < Server.players_count; i++) {
@@ -26,6 +26,6 @@ public class SunFaced extends Card {
             }
         }
         if(targets.size()==1) targets.get(0).refresh_health(-10);
-        else GameScreen.attack_target_selection(targets, -10);
+        else Server.attack(GameScreen.attack_target_selection(targets),-10);
     }
 }

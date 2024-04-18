@@ -1,5 +1,6 @@
 package com.mygdx.tablegame;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
@@ -13,4 +14,10 @@ public class AndroidLauncher extends AndroidApplication {
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		initialize(new GameController(), config);
 	}
+//	public void kill_app(){
+//		Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+//		homeIntent.addCategory( Intent.CATEGORY_HOME );
+//		homeIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//		startActivity(homeIntent);
+//	}
 }
