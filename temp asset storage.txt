@@ -1,0 +1,126 @@
+package com.mygdx.tablegame.tools;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.maps.Map;
+import com.badlogic.gdx.utils.ArrayMap;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+//класс, используемый для хранения текстур и их быстрой смены
+//#TODO заменить на Map с статическим массивом строк(названий текстур)
+public class AssetStorage {
+    private HashMap<String, ArrayList<String>> asset_pathes;
+    private AssetManager assetManager;
+
+    public AssetStorage() {
+        asset_pathes = new HashMap<>();
+        asset_pathes.put("default card", new ArrayList<String>());
+        asset_pathes.get("default card").add("card_texture.PNG");
+        asset_pathes.get("default card").add("card_texture_selected.PNG");
+        asset_pathes.get("default card").add("card 19.png");
+        asset_pathes.get("default card").add("card_texture1.png");
+        asset_pathes.put("pshick card", new ArrayList<String>());
+        asset_pathes.get("pshick card").add("pshick3d.png");
+        asset_pathes.get("pshick card").add("pshick3d_selected.png");
+        asset_pathes.get("pshick card").add("pshick.png");
+        asset_pathes.get("pshick card").add("pshick_selected.png");
+        asset_pathes.put("znak card", new ArrayList<String>());
+        asset_pathes.get("znak card").add("znak3D.png");
+        asset_pathes.get("znak card").add("znak3D_selected.png");
+        asset_pathes.get("znak card").add("znak.png");
+        asset_pathes.get("znak card").add("znak_selected.png");
+        asset_pathes.put("magic dog card", new ArrayList<String>());
+        asset_pathes.get("magic dog card").add("abrakadabrador3d.png");
+        asset_pathes.get("magic dog card").add("abrakadabrador3d_selected.png");
+        asset_pathes.get("magic dog card").add("abrakadabrador.png");
+        asset_pathes.get("magic dog card").add("abrakadabrador_selected.png");
+        asset_pathes.put("fireball card",new ArrayList<String>());
+        asset_pathes.get("fireball card").add("fireball3d.png");
+        asset_pathes.get("fireball card").add("fireball3d_selected.png");
+        asset_pathes.get("fireball card").add("fireball.png");
+        asset_pathes.get("fireball card").add("fireball_selected.png");
+        asset_pathes.put("amulet card",new ArrayList<String>());
+        asset_pathes.get("amulet card").add("Amulet3d.png");
+        asset_pathes.get("amulet card").add("Amulet3d_selected.png");
+        asset_pathes.get("amulet card").add("Amulet.png");
+        asset_pathes.get("amulet card").add("Amulet_selected.png");
+        asset_pathes.put("crown card",new ArrayList<String>());
+        asset_pathes.get("crown card").add("crown3d.png");
+        asset_pathes.get("crown card").add("crown3d_selected.png");
+        asset_pathes.get("crown card").add("crown.png");
+        asset_pathes.get("crown card").add("crown_selected.png");
+        asset_pathes.put("princess card",new ArrayList<String>());
+        asset_pathes.get("princcess card").add("princess3d.png");
+        asset_pathes.get("princcess card").add("princess3d_selected.png");
+        asset_pathes.get("princcess card").add("princess.png");
+        asset_pathes.get("princcess card").add("princess_selected.png");
+        asset_pathes.put("smallknight card",new ArrayList<String>());
+        asset_pathes.get("smallknight card").add("smallknight3d.png");
+        asset_pathes.get("smallknight card").add("smallknight3d_selected.png");
+        asset_pathes.get("smallknight card").add("smallknight.png");
+        asset_pathes.get("smallknight card").add("smallknight_selected.png");
+        asset_pathes.put("sunfaced card",new ArrayList<String>() );
+        asset_pathes.get("sunfaced card").add("solntselikiy3d.png");
+        asset_pathes.get("sunfaced card").add("solntselikiy3d_selected.png");
+        asset_pathes.get("sunfaced card").add("solntselikiy.png");
+        asset_pathes.get("sunfaced card").add("solntselikiy_selected.png");
+        asset_pathes.put("spellbook card",new ArrayList<String>());
+        asset_pathes.get("spellbook card").add("spellbook3d.png");
+        asset_pathes.get("spellbook card").add("spellbook3d_selected.png");
+        asset_pathes.get("spellbook card").add("spellbook.png");
+        asset_pathes.get("spellbook card").add("spellbook_selected.png");
+        asset_pathes.put("stranger card",new ArrayList<String>());
+        asset_pathes.get("stranger card").add("stranger3d.png");
+        asset_pathes.get("stranger card").add("stranger3d_selected.png");
+        asset_pathes.get("stranger card").add("stranger.png");
+        asset_pathes.get("stranger card").add("stranger_selected.png");
+        asset_pathes.put("summon card",new ArrayList<String>());
+        asset_pathes.get("summon card").add("summon3d.png");
+        asset_pathes.get("summon card").add("summon3d_selected.png");
+        asset_pathes.get("summon card").add("summon.png");
+        asset_pathes.get("summon card").add("summon_selected.png");
+        asset_pathes.put("twinbranches card",new ArrayList<String>());
+        asset_pathes.get("twinbranches card").add("twinbranches3d.png");
+        asset_pathes.get("twinbranches card").add("twinbranches3d_selected.png");
+        asset_pathes.get("twinbranches card").add("twinbranches.png");
+        asset_pathes.get("twinbranches card").add("twinbranches_selected.png");
+        asset_pathes.put("vampire card",new ArrayList<String>());
+        asset_pathes.get("vampire card").add("vampire3d.png");
+        asset_pathes.get("vampire card").add("vampire3d_selected.png");
+        asset_pathes.get("vampire card").add("vampire.png");
+        asset_pathes.get("vampire card").add("vampire_selected.png");
+        TextureAttribute simple3D_texture16 = new TextureAttribute(TextureAttribute.Diffuse, new Texture("zdorovyak3d.png"));
+        temp3d.add(simple3D_texture16);
+        TextureAttribute selected3D_texture16 = new TextureAttribute(TextureAttribute.Diffuse, new Texture("zdorovyak3d_selected.png"));
+        temp3d.add(selected3D_texture16);
+        Texture simple_2Dtexture16 = new Texture(Gdx.files.internal("zdorovyak.png"));
+        temp2d.add(simple_2Dtexture16);
+        Texture selected_2Dtexture16 = new Texture(Gdx.files.internal("zdorovyak_selected.png"));
+        temp2d.add(selected_2Dtexture16);
+
+        Texture heart_UI = new Texture(Gdx.files.internal("heart.png"));
+        Texture half_heart_UI = new Texture(Gdx.files.internal("half.png"));
+        Texture armor = new Texture(Gdx.files.internal("shield.png"));
+        for (int i = 0; i < textures3d.length; i++) {
+            for (int j = 0; j < textures3d[i].length; j++) {
+                textures3d[i][j] = temp3d.get(0);
+                temp3d.remove(0);
+            }
+        }
+        for (int i = 0; i < textures2d.length; i++) {
+            for (int j = 0; j < textures2d[i].length; j++) {
+                textures2d[i][j] = temp2d.get(0);
+                temp2d.remove(0);
+            }
+        }
+        textures_UI[0] = new Texture[2];
+        textures_UI[0][0] = heart_UI;
+        textures_UI[0][1] = half_heart_UI;
+        textures_UI[1] = new Texture[1];
+        textures_UI[1][0] = armor;
+    }
+}

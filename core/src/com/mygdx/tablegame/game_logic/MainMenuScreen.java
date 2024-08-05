@@ -1,5 +1,6 @@
 package com.mygdx.tablegame.game_logic;
 
+import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.assets.AssetManager;
@@ -23,12 +24,17 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.mygdx.tablegame.network.Network;
+import com.mygdx.tablegame.network.NetworkComponent;
+import com.mygdx.tablegame.network.NetworkComponentInterface;
+import com.mygdx.tablegame.network.RPCType;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 //класс главного меню игры, отсюда можно начать разные типы игры, посмотреть правила
-public class MainMenuScreen implements Screen {
+public class MainMenuScreen implements ApplicationListener,Screen, NetworkComponentInterface {
     private final GameController game;
     private SpriteBatch spriteBatch = new SpriteBatch();// для рисования 2д объектов
     private BitmapFont font = new BitmapFont(); // шрифт для различных надписей #TODO внедрить fretype font для использования языков поммимо английского
@@ -64,6 +70,8 @@ public class MainMenuScreen implements Screen {
     Sprite online_play_screen_background=new Sprite(online_play_screen_img,online_play_screen_img.getWidth(),online_play_screen_img.getHeight());
     AssetManager assetManager=new AssetManager();
     final String FONT_CHARS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789][_!$%#@|\\/?-+=()*&.;:,{}\"´`'<>";
+    NetworkComponent networkComponent=new NetworkComponent(this);
+    Network network=GameController.getInstance().network;
 
     public MainMenuScreen(GameController gam) {
         //инициализация переменных
@@ -88,6 +96,9 @@ public class MainMenuScreen implements Screen {
         font.setColor(Color.WHITE);
         font1.setColor(Color.BLACK);
         generator.dispose();
+
+
+
 
 
         skin = new Skin();
@@ -137,7 +148,6 @@ public class MainMenuScreen implements Screen {
 //                Server.server_init(names);
 //                game.setScreen(new GameScreen());
 //                GameController.state = GameState.CHANGE_PLAYER;
-
             }
         });
         verticalGroup.setSize(600, 500);
@@ -147,7 +157,7 @@ public class MainMenuScreen implements Screen {
         verticalGroup.addActor(single_start_button);
         verticalGroup.addActor(online_start_button);
         verticalGroup.addActor(rules_button);
-        //verticalGroup.addActor(settings_button);
+        verticalGroup.addActor(settings_button);
         add_player_button = new TextButton("добавить игрока", skin);
         begin_game_button = new TextButton("начать игру", skin);
         go_back_button1=new TextButton("назад",skin);
@@ -214,7 +224,12 @@ public class MainMenuScreen implements Screen {
         go_back_button2.setPosition(0,Gdx.graphics.getHeight()-go_back_button1.getHeight());
         go_back_button2.addListener(new ClickListener(){
             public void clicked(InputEvent event, float x, float y) {
-                GameController.state=GameState.START;
+//                GameController.state=GameState.START;
+                try {
+                    network.CallRPC(RPCType.Server,0,"RPCtest",25);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
         enter_session_name = new TextField("введите имя комнаты", skin);
@@ -243,6 +258,15 @@ public class MainMenuScreen implements Screen {
 //                    ServerOnline.this_player_name=enter_players_name.getText();
 //                    ServerOnline.websocketClient.onCreate(enter_session_name.getText(),ServerOnline.this_player_name);
 //                }
+
+                try {
+                    network.StartServerSocket(2555);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                network.WaitConnection();
+                create_session_button.setText(GameController.getInstance().networkUtils.getCurrentIP()+"   "+networkComponent.GetID().toString());
+
             }
         });
         join_session_button = new TextButton("присоединиться к комнате", skin);
@@ -262,6 +286,8 @@ public class MainMenuScreen implements Screen {
 //                    ServerOnline.this_player_name=enter_players_name.getText();
 //                    ServerOnline.websocketClient.onConnect(enter_session_name.getText(),ServerOnline.this_player_name);
 //                }
+                network.Connect(enter_session_name.getText(),2555);
+
             }
         });
         begin_online_game_button = new TextButton("начать игру", skin);
@@ -283,6 +309,9 @@ public class MainMenuScreen implements Screen {
 //        session_create_stage.addActor(enter_players_name);
         //waiting_room_stage.addActor(begin_game_button);
 
+    }
+    public void RPCtest(String s){
+        join_session_button.setText(s);
     }
 
     @Override
@@ -348,7 +377,17 @@ public class MainMenuScreen implements Screen {
     }
 
     @Override
+    public void create() {
+
+    }
+
+    @Override
     public void resize(int width, int height) {
+
+    }
+
+    @Override
+    public void render() {
 
     }
 
@@ -369,5 +408,14 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
+    }
+
+    @Override
+    public NetworkComponent GetNetworkComponent() {
+        return networkComponent;
+    }
+
+    public void RPStest(Integer arg){
+        go_back_button2.setText(arg.toString());
     }
 }

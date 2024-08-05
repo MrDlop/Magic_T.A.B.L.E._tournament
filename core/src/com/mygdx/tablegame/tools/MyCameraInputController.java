@@ -177,14 +177,14 @@ public class MyCameraInputController extends GestureDetector {
             return false;
         }
 
-        @Override
-        public boolean zoom(float initialDistance, float distance) {
-            float newZoom = distance - initialDistance;
-            float amount = newZoom - previousZoom;
-            previousZoom = newZoom;
-            float w = Gdx.graphics.getWidth(), h = Gdx.graphics.getHeight();
-            return controller.pinchZoom(amount / ((w > h) ? h : w));
-        }
+//        @Override
+//        public boolean zoom(float initialDistance, float distance) {
+//            float newZoom = distance - initialDistance;
+//            float amount = newZoom - previousZoom;
+//            previousZoom = newZoom;
+//            float w = Gdx.graphics.getWidth(), h = Gdx.graphics.getHeight();
+//            return controller.pinchZoom(amount / ((w > h) ? h : w));
+//        }
 
         @Override
         public boolean pinch(Vector2 initialPointer1, Vector2 initialPointer2, Vector2 pointer1, Vector2 pointer2) {
@@ -260,50 +260,49 @@ public class MyCameraInputController extends GestureDetector {
         this.controlsInverted = invertControls;
     }
 
-    public boolean process(float deltaX, float deltaY, int button) {
-        if (button == rotateButton) {
-            tmpV1.set(camera.direction).crs(camera.up).y = 0f;
-            camera.rotateAround(target, tmpV1.nor(), deltaY * rotateAngle);
-            camera.rotateAround(target, Vector3.Y, deltaX * -rotateAngle);
-        } else if (button == translateButton) {
-            camera.translate(tmpV1.set(camera.direction).crs(camera.up).nor().scl(-deltaX * translateUnits));
-            camera.translate(tmpV2.set(camera.up).scl(-deltaY * translateUnits));
-            if (translateTarget) target.add(tmpV1).add(tmpV2);
-        } else if (button == forwardButton) {
-            camera.translate(tmpV1.set(camera.direction).scl(deltaY * translateUnits));
-            if (forwardTarget) target.add(tmpV1);
-        }
-        if (autoUpdate) camera.update();
-        return true;
-    }
+//    public boolean process(float deltaX, float deltaY, int button) {
+////        if (button == rotateButton) {
+////            tmpV1.set(camera.direction).crs(camera.up).y = 0f;
+////            camera.rotateAround(target, tmpV1.nor(), deltaY * rotateAngle);
+////            camera.rotateAround(target, Vector3.Y, deltaX * -rotateAngle);
+////        } else if (button == translateButton) {
+////            camera.translate(tmpV1.set(camera.direction).crs(camera.up).nor().scl(-deltaX * translateUnits));
+////            camera.translate(tmpV2.set(camera.up).scl(-deltaY * translateUnits));
+////            if (translateTarget) target.add(tmpV1).add(tmpV2);
+////        } else if (button == forwardButton) {
+////            camera.translate(tmpV1.set(camera.direction).scl(deltaY * translateUnits));
+////            if (forwardTarget) target.add(tmpV1);
+////        }
+////        if (autoUpdate) camera.update();
+////        return true;
+//    }
 
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        boolean result = super.touchDragged(screenX, screenY, pointer);
-        if (result || this.button < 0) return result;
-        final float deltaX = (screenX - startX) / Gdx.graphics.getWidth();
-        final float deltaY = (startY - screenY) / Gdx.graphics.getHeight();
-        startX = screenX;
-        startY = screenY;
-        return process(deltaX, deltaY, button);
-    }
+//    @Override
+//    public boolean touchDragged(int screenX, int screenY, int pointer) {
+//        boolean result = super.touchDragged(screenX, screenY, pointer);
+//        if (result || this.button < 0) return result;
+//        final float deltaX = (screenX - startX) / Gdx.graphics.getWidth();
+//        final float deltaY = (startY - screenY) / Gdx.graphics.getHeight();
+//        startX = screenX;
+//        startY = screenY;
+//        return process(deltaX, deltaY, button);
+//    }
 
-    @Override
-    public boolean scrolled(float amountX, float amountY) {
-        return zoom(amountY * scrollFactor * translateUnits);
-    }
+//    public boolean scrolled(float amountX, float amountY) {
+//        return zoom(amountY * scrollFactor * translateUnits);
+//    }
 
-    public boolean zoom(float amount) {
-        if (!alwaysScroll && activateKey != 0 && !activatePressed) return false;
-        camera.translate(tmpV1.set(camera.direction).scl(amount));
-        if (scrollTarget) target.add(tmpV1);
-        if (autoUpdate) camera.update();
-        return true;
-    }
+//    public boolean zoom(float amount) {
+//        if (!alwaysScroll && activateKey != 0 && !activatePressed) return false;
+//        camera.translate(tmpV1.set(camera.direction).scl(amount));
+//        if (scrollTarget) target.add(tmpV1);
+//        if (autoUpdate) camera.update();
+//        return true;
+//    }
 
-    public boolean pinchZoom(float amount) {
-        return zoom(pinchZoomFactor * amount);
-    }
+//    public boolean pinchZoom(float amount) {
+//        return zoom(pinchZoomFactor * amount);
+//    }
 
     @Override
     public boolean keyDown(int keycode) {

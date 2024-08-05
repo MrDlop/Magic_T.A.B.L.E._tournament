@@ -1,7 +1,6 @@
 package com.mygdx.tablegame.network;
 
 import com.google.gson.Gson;
-
 import java.lang.reflect.Type;
 
 public class RPCData {
@@ -10,6 +9,8 @@ public class RPCData {
     public Object[] Args;
     private String SerializedArgs;
     public Type[] ArgsTypes;
+
+
 
     public static String SerializeRPCData(RPCData RPC)
     {
