@@ -259,6 +259,7 @@ public class Network
         {
             String Data = "";
             try {
+                client_input_stream= (DataInputStream) client_socket.getInputStream();
                 Data = client_input_stream.readUTF();
             } catch (IOException e) { }
 

@@ -20,7 +20,7 @@ public class NetworkComponent {
         Owner = owner;
     }
     private final int ID;
-    public int GetID() 
+    public Integer GetID()
     {
         return ID;
     }

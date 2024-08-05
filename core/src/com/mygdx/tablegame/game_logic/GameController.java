@@ -2,6 +2,8 @@ package com.mygdx.tablegame.game_logic;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Game;
+import com.mygdx.tablegame.network.Network;
+import com.mygdx.tablegame.network.NetworkUtils;
 import com.mygdx.tablegame.tools.AssetStorage;
 
 import java.util.Timer;
@@ -9,8 +11,25 @@ import java.util.function.Function;
 
 // основной класс, его экземпляр создается при запуске приложения
 //использует систему экранов, предлагаемую LibGDX
+
+
+
 public  class GameController extends Game {
+	private static GameController instance;
+	public static GameController getInstance(){
+		if  (instance != null) {
+		return instance;
+		}
+		return null;
+	}
+
+	public GameController(NetworkUtils networkUtils){
+		instance=this;
+		this.networkUtils=networkUtils;
+	}
+	public NetworkUtils networkUtils;
 	private MainMenuScreen menu;  //экран главного меню
+	public Network network=new Network();
 	public static GameState state;  //энумератор, используемый для смены состояний экранов
 	public static final String log_tag="MyApp"; //тег для логов
 	public static Timer timer;
@@ -20,6 +39,7 @@ public  class GameController extends Game {
 		AssetStorage tx=new AssetStorage(); //инициализация хранилища текстур
 		menu=new MainMenuScreen(this); //создание экрана меню
 		this.setScreen(menu);//установка экрана
+		Network network=new Network();
 		timer=new Timer();
 	}
 

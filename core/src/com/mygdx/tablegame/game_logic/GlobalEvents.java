@@ -1,5 +1,7 @@
 package com.mygdx.tablegame.game_logic;
 
+import com.badlogic.ashley.signals.Listener;
+
 import java.util.ArrayList;
 
 
